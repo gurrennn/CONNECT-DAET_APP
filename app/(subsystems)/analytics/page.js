@@ -5,37 +5,134 @@ import { Card, CardContent, CardHeader } from "../../components/ui/Card"
 import Button from "../../components/ui/Button"
 import AdminOnly from "../../components/AdminOnly"
 import ProtectedRoute from "../../components/ProtectedRoute"
+import {
+  getVisitorSpending,
+  getFootTraffic,
+  getRewardsData,
+  getSentimentAnalysis,
+  getDemographics,
+  getResourceUsage,
+  getEconomicImpact,
+  getPredictiveTrends,
+  getSustainabilityScore
+} from "../../lib/analytics-fetcher"
 
 function AdminAnalyticsContent() {
   const [loading, setLoading] = useState(true)
   const [generatingReport, setGeneratingReport] = useState(null)
+  const [selectedChartInfo, setSelectedChartInfo] = useState(null)
   const [analyticsData, setAnalyticsData] = useState({
-    totalUsers: 1247,
-    activeUsers: 892,
-    monthlyRevenue: 45200000,
-    jobsCreated: 8234,
-    monthlyVisitors: 156000,
-    resourceEfficiency: 92,
+    totalUsers: 0,
+    activeUsers: 0,
+    monthlyRevenue: 0,
+    jobsCreated: 0,
+    monthlyVisitors: 0,
+    resourceEfficiency: 0,
     subsystems: {
-      museum: { emojiUsage: 156, sentiment: 'positive', active: true, emojis: ['😊', '👍', '❤️', '🎉', '🌟'] },
-      tours: { emojiUsage: 234, sentiment: 'positive', active: true, emojis: ['😊', '👍', '❤️', '🎉', '🏖️'] },
-      shop: { emojiUsage: 189, sentiment: 'positive', active: true, emojis: ['😊', '👍', '💪', '🎯', '📈'] },
-      experiences: { emojiUsage: 145, sentiment: 'neutral', active: true, emojis: ['😊', '👍', '❤️', '🎯', '💯'] },
-      programs: { emojiUsage: 98, sentiment: 'positive', active: true, emojis: ['😊', '👍', '❤️', '🎉', '🌟'] },
-      crisis: { emojiUsage: 23, sentiment: 'negative', active: false, emojis: ['⚠️', '🛠️', '📉', '😢', '🚨'] },
-      rewards: { emojiUsage: 267, sentiment: 'positive', active: true, emojis: ['😊', '👍', '❤️', '🎉', '💯'] },
-      feedback: { emojiUsage: 312, sentiment: 'positive', active: true, emojis: ['😊', '👍', '❤️', '🎉', '🌟'] },
-      info: { emojiUsage: 67, sentiment: 'neutral', active: true, emojis: ['😊', '👍', '❓', '💡', '📖'] },
-      workflow: { emojiUsage: 45, sentiment: 'neutral', active: true, emojis: ['😊', '👍', '⚙️', '📋', '✅'] }
+      museum: { emojiUsage: 0, sentiment: 'neutral', active: true, emojis: ['😊', '👍', '❤️', '🎉', '🌟'] },
+      tours: { emojiUsage: 0, sentiment: 'neutral', active: true, emojis: ['😊', '👍', '❤️', '🎉', '🏖️'] },
+      shop: { emojiUsage: 0, sentiment: 'neutral', active: true, emojis: ['😊', '👍', '💪', '🎯', '📈'] },
+      experiences: { emojiUsage: 0, sentiment: 'neutral', active: true, emojis: ['😊', '👍', '❤️', '🎯', '💯'] },
+      programs: { emojiUsage: 0, sentiment: 'neutral', active: true, emojis: ['😊', '👍', '❤️', '🎉', '🌟'] },
+      crisis: { emojiUsage: 0, sentiment: 'neutral', active: false, emojis: ['⚠️', '🛠️', '📉', '😢', '🚨'] },
+      rewards: { emojiUsage: 0, sentiment: 'neutral', active: true, emojis: ['😊', '👍', '❤️', '🎉', '💯'] },
+      feedback: { emojiUsage: 0, sentiment: 'neutral', active: true, emojis: ['😊', '👍', '❤️', '🎉', '🌟'] },
+      info: { emojiUsage: 0, sentiment: 'neutral', active: true, emojis: ['😊', '👍', '❓', '💡', '📖'] },
+      workflow: { emojiUsage: 0, sentiment: 'neutral', active: true, emojis: ['😊', '👍', '⚙️', '📋', '✅'] }
     },
     topEmojis: ['😊', '👍', '❤️', '🎉', '🌟', '🏖️', '🎯', '💯', '⚠️', '🛠️'],
     sentimentTrend: 'stable'
   })
 
   useEffect(() => {
-    // Data is already set in initial state, just simulate loading
-    setTimeout(() => setLoading(false), 1000)
+    // Fetch real data from Supabase
+    const fetchRealData = async () => {
+      try {
+        const [economicImpact, footTraffic, sentiment, resourceUsage, demographics] = await Promise.all([
+          getEconomicImpact(),
+          getFootTraffic(),
+          getSentimentAnalysis(),
+          getResourceUsage(),
+          getDemographics()
+        ])
+
+        // Calculate metrics from real data
+        const monthlyRevenue = economicImpact.length > 0 ? economicImpact[0].total_revenue : 0
+        const monthlyVisitors = footTraffic.reduce((sum, t) => sum + t.visitors, 0)
+        const totalUsers = demographics.reduce((sum, t) => sum + t.count, 0)
+        const activeUsers = Math.round(totalUsers * 0.7) // Estimate active users
+        const resourceEfficiency = resourceUsage.length > 0
+          ? Math.round(resourceUsage.reduce((sum, t) => sum + t.usage, 0) / resourceUsage.length)
+          : 0
+
+        // Update subsystem emoji usage based on sentiment data
+        const subsystems = { ...analyticsData.subsystems }
+        const subsystemFeedback = {
+          museum: sentiment.positive * 0.3,
+          tours: sentiment.positive * 0.25,
+          shop: sentiment.positive * 0.2,
+          experiences: sentiment.positive * 0.15,
+          rewards: sentiment.positive * 0.1
+        }
+
+        Object.keys(subsystems).forEach(key => {
+          if (subsystemFeedback[key]) {
+            subsystems[key].emojiUsage = Math.round(subsystemFeedback[key])
+            subsystems[key].sentiment = sentiment.positive > sentiment.negative ? 'positive' : 'neutral'
+          }
+        })
+
+        setAnalyticsData({
+          totalUsers,
+          activeUsers,
+          monthlyRevenue,
+          jobsCreated: Math.round(monthlyRevenue / 5000), // Estimate jobs based on revenue
+          monthlyVisitors,
+          resourceEfficiency,
+          subsystems,
+          topEmojis: ['😊', '👍', '❤️', '🎉', '🌟', '🏖️', '🎯', '💯', '⚠️', '🛠️'],
+          sentimentTrend: sentiment.positive > sentiment.negative ? 'positive' : 'stable'
+        })
+      } catch (error) {
+        console.error('Error fetching analytics data:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchRealData()
   }, [])
+
+  const chartInfo = {
+    'visitor-trends': {
+      title: '📈 Visitor Trends Chart',
+      description: 'This chart displays monthly visitor statistics showing the number of visitors to the CONNECT-DAET platform over time.',
+      howItWorks: '• Data is collected from user visits across all subsystems\n• Shows trends and patterns in visitor engagement\n• Helps identify peak seasons and low-traffic periods\n• Used for planning marketing campaigns and resource allocation',
+      metrics: '• Total monthly visitors\n• Visitor growth rate\n• Peak visit times\n• Geographic distribution'
+    },
+    'revenue-analysis': {
+      title: '💰 Revenue Analysis Chart',
+      description: 'This chart breaks down monthly revenue generated from all CONNECT-DAET subsystems including museum tours, experiences, and services.',
+      howItWorks: '• Tracks revenue from all monetized services\n• Shows revenue trends by category\n• Helps identify high-performing revenue streams\n• Used for financial planning and budget allocation',
+      metrics: '• Total monthly revenue\n• Revenue by subsystem\n• Average spending per visitor\n• Revenue growth rate'
+    },
+    'emoji-usage': {
+      title: '😊 Emoji Usage Chart',
+      description: 'This chart displays the most popular emojis used across all CONNECT-DAET subsystems, showing user sentiment and engagement patterns.',
+      howItWorks: '• Tracks emoji reactions from user interactions\n• Shows which emojis are most frequently used\n• Helps gauge user sentiment and satisfaction\n• Used to improve user experience and content',
+      metrics: '• Top 10 most used emojis\n• Emoji usage by subsystem\n• Sentiment analysis (positive/negative/neutral)\n• Emoji trends over time'
+    },
+    'system-performance': {
+      title: '⚡ System Performance Chart',
+      description: 'This chart shows the overall health and efficiency of the CONNECT-DAET system, including resource utilization and operational metrics.',
+      howItWorks: '• Monitors system resource usage\n• Tracks efficiency metrics across subsystems\n• Identifies potential bottlenecks or issues\n• Used for system optimization and maintenance',
+      metrics: '• Resource efficiency percentage\n• System uptime\n• Response times\n• Error rates'
+    }
+  }
+
+  const handleChartClick = (chartKey) => {
+    setSelectedChartInfo(chartInfo[chartKey])
+  }
 
   const generateReport = async (reportType) => {
     console.log('generateReport called with type:', reportType)
@@ -308,7 +405,10 @@ End of Tourism Impact Assessment
           {/* Analytics Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Visitor Trends Chart */}
-            <Card className="bg-gray-800 border-gray-700">
+            <Card 
+              className="bg-gray-800 border-gray-700 cursor-pointer hover:border-blue-500 transition-colors"
+              onClick={() => handleChartClick('visitor-trends')}
+            >
               <CardHeader>
                 <h3 className="text-xl font-semibold text-white">📈 Visitor Trends</h3>
                 <p className="text-gray-400 text-sm">Monthly visitor statistics</p>
@@ -320,13 +420,17 @@ End of Tourism Impact Assessment
                     <p className="text-gray-400">Chart: Visitor Trends</p>
                     <p className="text-2xl font-bold text-white mt-2">{analyticsData.monthlyVisitors.toLocaleString()}</p>
                     <p className="text-gray-400">Monthly Visitors</p>
+                    <p className="text-xs text-blue-400 mt-3">👆 Click to learn more</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Revenue Chart */}
-            <Card className="bg-gray-800 border-gray-700">
+            <Card 
+              className="bg-gray-800 border-gray-700 cursor-pointer hover:border-blue-500 transition-colors"
+              onClick={() => handleChartClick('revenue-analysis')}
+            >
               <CardHeader>
                 <h3 className="text-xl font-semibold text-white">💰 Revenue Analysis</h3>
                 <p className="text-gray-400 text-sm">Monthly revenue breakdown</p>
@@ -338,13 +442,17 @@ End of Tourism Impact Assessment
                     <p className="text-gray-400">Chart: Revenue Analysis</p>
                     <p className="text-2xl font-bold text-white mt-2">₱{(analyticsData.monthlyRevenue / 1000000).toFixed(1)}M</p>
                     <p className="text-gray-400">Monthly Revenue</p>
+                    <p className="text-xs text-blue-400 mt-3">👆 Click to learn more</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Emoji Usage Chart */}
-            <Card className="bg-gray-800 border-gray-700">
+            <Card 
+              className="bg-gray-800 border-gray-700 cursor-pointer hover:border-blue-500 transition-colors"
+              onClick={() => handleChartClick('emoji-usage')}
+            >
               <CardHeader>
                 <h3 className="text-xl font-semibold text-white">😊 Emoji Usage</h3>
                 <p className="text-gray-400 text-sm">Top emojis across all systems</p>
@@ -356,13 +464,17 @@ End of Tourism Impact Assessment
                     <p className="text-gray-400">Chart: Top Emojis</p>
                     <p className="text-lg font-bold text-white mt-2">{analyticsData.topEmojis.slice(0, 5).join(' ')}</p>
                     <p className="text-gray-400">Most Popular</p>
+                    <p className="text-xs text-blue-400 mt-3">👆 Click to learn more</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* System Performance */}
-            <Card className="bg-gray-800 border-gray-700">
+            <Card 
+              className="bg-gray-800 border-gray-700 cursor-pointer hover:border-blue-500 transition-colors"
+              onClick={() => handleChartClick('system-performance')}
+            >
               <CardHeader>
                 <h3 className="text-xl font-semibold text-white">⚡ System Performance</h3>
                 <p className="text-gray-400 text-sm">Overall system health</p>
@@ -374,6 +486,7 @@ End of Tourism Impact Assessment
                     <p className="text-gray-400">Chart: System Performance</p>
                     <p className="text-2xl font-bold text-white mt-2">{analyticsData.resourceEfficiency}%</p>
                     <p className="text-gray-400">Resource Efficiency</p>
+                    <p className="text-xs text-blue-400 mt-3">👆 Click to learn more</p>
                   </div>
                 </div>
               </CardContent>
@@ -453,6 +566,57 @@ End of Tourism Impact Assessment
           </Card>
         </div>
       </div>
+
+      {/* Chart Info Modal */}
+      {selectedChartInfo && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+          onClick={() => setSelectedChartInfo(null)}
+        >
+          <div 
+            className="bg-gray-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-gray-700"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="p-6">
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-2xl font-bold text-white">{selectedChartInfo.title}</h2>
+                <button 
+                  onClick={() => setSelectedChartInfo(null)}
+                  className="text-gray-400 hover:text-white text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-semibold text-blue-400 mb-2">Description</h3>
+                  <p className="text-gray-300">{selectedChartInfo.description}</p>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-semibold text-green-400 mb-2">How It Works</h3>
+                  <p className="text-gray-300 whitespace-pre-line">{selectedChartInfo.howItWorks}</p>
+                </div>
+                
+                <div>
+                  <h3 className="text-lg font-semibold text-purple-400 mb-2">Key Metrics</h3>
+                  <p className="text-gray-300 whitespace-pre-line">{selectedChartInfo.metrics}</p>
+                </div>
+              </div>
+              
+              <div className="mt-6 flex justify-end">
+                <Button 
+                  variant="primary"
+                  onClick={() => setSelectedChartInfo(null)}
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
