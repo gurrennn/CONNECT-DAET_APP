@@ -108,12 +108,30 @@ ALTER TABLE feedback ENABLE ROW LEVEL SECURITY;
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE facility_usage ENABLE ROW LEVEL SECURITY;
 
--- Create policies (adjust according to your security needs)
-CREATE POLICY "Public read access for analytics" ON shop_transactions FOR SELECT USING (true);
-CREATE POLICY "Public read access for analytics" ON tours_bookings FOR SELECT USING (true);
-CREATE POLICY "Public read access for analytics" ON museum_scans FOR SELECT USING (true);
-CREATE POLICY "Public read access for analytics" ON experiences_checkins FOR SELECT USING (true);
-CREATE POLICY "Public read access for analytics" ON reward_history FOR SELECT USING (true);
-CREATE POLICY "Public read access for analytics" ON feedback FOR SELECT USING (true);
-CREATE POLICY "Public read access for analytics" ON profiles FOR SELECT USING (true);
-CREATE POLICY "Public read access for analytics" ON facility_usage FOR SELECT USING (true);
+-- Restrict analytics reads to the configured administrator account.
+DROP POLICY IF EXISTS "Public read access for analytics" ON shop_transactions;
+DROP POLICY IF EXISTS "Public read access for analytics" ON tours_bookings;
+DROP POLICY IF EXISTS "Public read access for analytics" ON museum_scans;
+DROP POLICY IF EXISTS "Public read access for analytics" ON experiences_checkins;
+DROP POLICY IF EXISTS "Public read access for analytics" ON reward_history;
+DROP POLICY IF EXISTS "Public read access for analytics" ON feedback;
+DROP POLICY IF EXISTS "Public read access for analytics" ON profiles;
+DROP POLICY IF EXISTS "Public read access for analytics" ON facility_usage;
+
+DROP POLICY IF EXISTS "Admin read access for analytics" ON shop_transactions;
+DROP POLICY IF EXISTS "Admin read access for analytics" ON tours_bookings;
+DROP POLICY IF EXISTS "Admin read access for analytics" ON museum_scans;
+DROP POLICY IF EXISTS "Admin read access for analytics" ON experiences_checkins;
+DROP POLICY IF EXISTS "Admin read access for analytics" ON reward_history;
+DROP POLICY IF EXISTS "Admin read access for analytics" ON feedback;
+DROP POLICY IF EXISTS "Admin read access for analytics" ON profiles;
+DROP POLICY IF EXISTS "Admin read access for analytics" ON facility_usage;
+
+CREATE POLICY "Admin read access for analytics" ON shop_transactions FOR SELECT USING (auth.uid() = 'c89843cd-b551-4925-b777-6c5c5cd3cb65'::uuid);
+CREATE POLICY "Admin read access for analytics" ON tours_bookings FOR SELECT USING (auth.uid() = 'c89843cd-b551-4925-b777-6c5c5cd3cb65'::uuid);
+CREATE POLICY "Admin read access for analytics" ON museum_scans FOR SELECT USING (auth.uid() = 'c89843cd-b551-4925-b777-6c5c5cd3cb65'::uuid);
+CREATE POLICY "Admin read access for analytics" ON experiences_checkins FOR SELECT USING (auth.uid() = 'c89843cd-b551-4925-b777-6c5c5cd3cb65'::uuid);
+CREATE POLICY "Admin read access for analytics" ON reward_history FOR SELECT USING (auth.uid() = 'c89843cd-b551-4925-b777-6c5c5cd3cb65'::uuid);
+CREATE POLICY "Admin read access for analytics" ON feedback FOR SELECT USING (auth.uid() = 'c89843cd-b551-4925-b777-6c5c5cd3cb65'::uuid);
+CREATE POLICY "Admin read access for analytics" ON profiles FOR SELECT USING (auth.uid() = 'c89843cd-b551-4925-b777-6c5c5cd3cb65'::uuid);
+CREATE POLICY "Admin read access for analytics" ON facility_usage FOR SELECT USING (auth.uid() = 'c89843cd-b551-4925-b777-6c5c5cd3cb65'::uuid);

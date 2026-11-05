@@ -1,16 +1,18 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader } from "../../components/ui/Card"
 import { Button } from "../../components/ui/Button"
 import AdminOnly from "../../components/AdminOnly"
-import { 
-  VisitorSpendingChart, 
-  FootTrafficChart, 
-  RewardsChart, 
-  SentimentChart, 
-  DemographicsChart, 
-  ResourceUsageChart 
+import { supabase } from '../../lib/supabaseClient'
+import {
+  VisitorSpendingChart,
+  FootTrafficChart,
+  RewardsChart,
+  SentimentChart,
+  DemographicsChart,
+  ResourceUsageChart
 } from './components/Charts'
 import { PredictiveAnalytics, SustainabilityScore } from './components/PredictiveAnalytics'
 import {
@@ -28,9 +30,13 @@ import {
 } from '../../lib/analytics-fetcher'
 
 function AnalyticsContent() {
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [selectedChartInfo, setSelectedChartInfo] = useState<any>(null)
   const [generatingReport, setGeneratingReport] = useState<string | null>(null)
+  const [user, setUser] = useState<any>(null)
+  const [signingOut, setSigningOut] = useState(false)
+  const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d')
   const [data, setData] = useState<{
     visitorSpending: Array<{ month: string; spending: number }>
     footTraffic: Array<{ date: string; visitors: number }>

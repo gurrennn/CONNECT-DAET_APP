@@ -1,8 +1,12 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation'
+import type { User } from '@supabase/supabase-js'
 import { Button } from './ui/Button'
+import { supabase } from '../lib/supabaseClient'
+import { isAdminUser } from '../lib/adminAccess'
 
 interface NavigationProps {
   currentPath?: string
@@ -10,18 +14,73 @@ interface NavigationProps {
 
 export const Navigation: React.FC<NavigationProps> = ({ currentPath }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isSigningOut, setIsSigningOut] = useState(false)
+  const [authError, setAuthError] = useState('')
+  const pathname = usePathname()
+  const router = useRouter()
+  const activePath = currentPath ?? pathname
+
+  useEffect(() => {
+    let active = true
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (active) {
+        setUser(session?.user ?? null)
+        setIsLoading(false)
+      }
+    })
+
+    supabase.auth.getSession()
+      .then(({ data, error }) => {
+        if (!active) return
+        if (error) setAuthError(error.message)
+        setUser(data.session?.user ?? null)
+        setIsLoading(false)
+      })
+      .catch((error: unknown) => {
+        if (!active) return
+        setAuthError(error instanceof Error ? error.message : 'Unable to load your session.')
+        setIsLoading(false)
+      })
+
+    return () => {
+      active = false
+      subscription.unsubscribe()
+    }
+  }, [])
 
   const navigationItems = [
     { name: 'Home', href: '/' },
-    { name: 'Analytics', href: '/analytics' },
-    { name: 'Admin Dashboard', href: '/admin' },
+    ...(isAdminUser(user)
+      ? [{ name: 'Analytics', href: '/analytics' }]
+      : []),
   ]
 
   const isActive = (href: string) => {
     if (href === '/') {
-      return currentPath === '/' || currentPath === undefined
+      return activePath === '/'
     }
-    return currentPath?.startsWith(href)
+    return activePath?.startsWith(href)
+  }
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true)
+    setAuthError('')
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        setAuthError(error.message)
+        return
+      }
+
+      setIsMenuOpen(false)
+      router.replace('/')
+    } catch (error) {
+      setAuthError(error instanceof Error ? error.message : 'Unable to sign out.')
+    } finally {
+      setIsSigningOut(false)
+    }
   }
 
   return (
@@ -51,6 +110,15 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPath }) => {
                   `}
                 >
                   {item.name}
+                </Link>
+              ))}
+              {!isLoading && (user ? (
+                <Button variant="secondary" size="sm" onClick={handleSignOut} disabled={isSigningOut}>
+                  {isSigningOut ? 'Signing out...' : 'Sign out'}
+                </Button>
+              ) : (
+                <Link href="/auth" className="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-100">
+                  Sign in
                 </Link>
               ))}
             </div>
@@ -110,8 +178,32 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPath }) => {
                   {item.name}
                 </Link>
               ))}
+              {!isLoading && (user ? (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleSignOut}
+                  disabled={isSigningOut}
+                  className="w-full"
+                >
+                  {isSigningOut ? 'Signing out...' : 'Sign out'}
+                </Button>
+              ) : (
+                <Link
+                  href="/auth"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:bg-gray-100"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Sign in
+                </Link>
+              ))}
             </div>
           </div>
+        )}
+        {authError && (
+          <p role="alert" className="pb-2 text-sm text-red-600">
+            Authentication error: {authError}
+          </p>
         )}
       </div>
     </nav>

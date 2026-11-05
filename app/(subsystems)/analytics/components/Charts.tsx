@@ -67,7 +67,7 @@ export const VisitorSpendingChart: React.FC<VisitorSpendingChartProps> = ({ data
           <XAxis dataKey="month" />
           <YAxis tickFormatter={(value) => `₱${(value / 1000000).toFixed(1)}M`} />
           <Tooltip 
-            formatter={(value: number) => [`₱${value.toLocaleString()}`, 'Spending']}
+            formatter={(value) => [`₱${Number(value ?? 0).toLocaleString()}`, 'Spending']}
             labelFormatter={(label) => `Month: ${label}`}
           />
           <Legend />
@@ -105,7 +105,7 @@ export const FootTrafficChart: React.FC<FootTrafficChartProps> = ({ data, onChar
           />
           <YAxis />
           <Tooltip 
-            formatter={(value: number) => [value.toLocaleString(), 'Visitors']}
+            formatter={(value) => [Number(value ?? 0).toLocaleString(), 'Visitors']}
             labelFormatter={(label) => `Date: ${new Date(label).toLocaleDateString()}`}
           />
           <Legend />
@@ -134,7 +134,7 @@ export const RewardsChart: React.FC<RewardsChartProps> = ({ data, onChartClick }
           <XAxis dataKey="week" />
           <YAxis />
           <Tooltip 
-            formatter={(value: number) => [value, 'Rewards']}
+            formatter={(value) => [Number(value ?? 0), 'Rewards']}
             labelFormatter={(label) => label}
           />
           <Legend />
@@ -206,7 +206,7 @@ export const DemographicsChart: React.FC<DemographicsChartProps> = ({ data, onCh
           <XAxis type="number" />
           <YAxis dataKey="age_group" type="category" />
           <Tooltip 
-            formatter={(value: number) => [value.toLocaleString(), 'Visitors']}
+            formatter={(value) => [Number(value ?? 0).toLocaleString(), 'Visitors']}
             labelFormatter={(label) => `Age: ${label}`}
           />
           <Legend />
@@ -235,7 +235,7 @@ export const ResourceUsageChart: React.FC<ResourceUsageChartProps> = ({ data, on
           <XAxis dataKey="facility" />
           <YAxis domain={[0, 100]} />
           <Tooltip 
-            formatter={(value: number) => [`${value}%`, 'Usage']}
+            formatter={(value) => [`${Number(value ?? 0)}%`, 'Usage']}
             labelFormatter={(label) => `Facility: ${label}`}
           />
           <Legend />

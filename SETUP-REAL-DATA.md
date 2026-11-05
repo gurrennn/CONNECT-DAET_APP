@@ -63,7 +63,17 @@ If you want to test with sample data:
 2. Navigate to your analytics page
 3. The charts should now display real data from your Supabase database
 
-## Step 7: Check Data in Supabase Dashboard
+## Step 7: Set Up Login and Admin Access
+
+1. In Supabase, enable the Email provider under Authentication settings.
+2. Set the site's URL and allowed redirect URLs for your local and deployed app.
+3. Disable public sign-ups in Supabase Authentication settings. This app is configured for the existing administrator account only.
+4. Sign in at `/auth` with the existing admin account. The app allows analytics access only to user ID `c89843cd-b551-4925-b777-6c5c5cd3cb65`.
+5. Run the updated `supabase-schema.sql` in the SQL Editor to replace public analytics read policies with a policy restricted to that administrator account.
+
+The app does not create accounts. Manage the administrator password through Supabase Auth.
+
+## Step 8: Check Data in Supabase Dashboard
 
 To verify your data is being stored correctly:
 

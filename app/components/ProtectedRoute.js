@@ -2,31 +2,59 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { supabase } from '../lib/supabaseClient'
 
 export default function ProtectedRoute({ children, requireAuth = true }) {
   const router = useRouter()
   const [isChecking, setIsChecking] = useState(true)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [authError, setAuthError] = useState('')
 
   useEffect(() => {
-    const checkAuth = () => {
-      // Check if user is logged in
-      const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true'
-      const currentUser = localStorage.getItem('currentUser')
-      
-      const authenticated = isLoggedIn && currentUser
-      
-      setIsAuthenticated(authenticated)
-      setIsChecking(false)
+    let active = true
 
-      if (requireAuth && !authenticated) {
-        // Redirect to auth page if not logged in
-        router.push('/auth')
+    const checkAuth = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        if (!active) return
+
+        if (error) {
+          setAuthError(error.message)
+          setIsChecking(false)
+          return
+        }
+
+        const authenticated = Boolean(user)
+        setIsAuthenticated(authenticated)
+        setIsChecking(false)
+
+        if (requireAuth && !authenticated) {
+          router.replace('/auth')
+        }
+      } catch (error) {
+        if (!active) return
+        setAuthError(error instanceof Error ? error.message : 'Unable to check your sign-in status.')
+        setIsChecking(false)
       }
     }
 
-    checkAuth()
+    void checkAuth()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return
+      const authenticated = Boolean(session?.user)
+      setIsAuthenticated(authenticated)
+      if (requireAuth && !authenticated) router.replace('/auth')
+    })
+
+    return () => {
+      active = false
+      subscription.unsubscribe()
+    }
   }, [router, requireAuth])
+
+  if (authError) {
+    return <p role="alert" className="p-6 text-center text-red-600">Authentication error: {authError}</p>
+  }
 
   if (isChecking) {
     return (

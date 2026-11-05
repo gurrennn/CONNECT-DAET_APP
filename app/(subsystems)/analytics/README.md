@@ -6,8 +6,8 @@ The Analytics subsystem serves as the "eyes" of CONNECT-Daet.ph, providing compr
 ## Key Features
 
 ### 🔐 Admin Protection
-- Only users with `admin` role in the `profiles` table can access `/analytics`
-- Automatic authentication check via Supabase
+- Only the configured administrator account can access `/analytics`
+- Authentication is checked with Supabase Auth
 - Graceful fallback for unauthorized users
 
 ### 📊 Data Visualization

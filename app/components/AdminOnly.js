@@ -2,54 +2,64 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-
-// Real admin authentication check
-const isAdminUser = () => {
-  // Check if user has admin role in localStorage
-  const userRole = localStorage.getItem('userRole')
-  const isAdmin = userRole === 'admin'
-  
-  // Also check for admin session
-  const adminSession = sessionStorage.getItem('isAdmin')
-  
-  // Return true if admin role is set (no login required)
-  return isAdmin || adminSession === 'true'
-}
-
-// Helper functions for admin authentication (for development/testing)
-export const setAdminRole = (isAdmin = true) => {
-  if (isAdmin) {
-    localStorage.setItem('userRole', 'admin')
-    sessionStorage.setItem('isAdmin', 'true')
-    sessionStorage.setItem('isLoggedIn', 'true')
-  } else {
-    localStorage.removeItem('userRole')
-    sessionStorage.removeItem('isAdmin')
-    sessionStorage.removeItem('isLoggedIn')
-  }
-}
-
-export const isAdminLoggedIn = () => isAdminUser()
+import { supabase } from '../lib/supabaseClient'
+import { isAdminUser } from '../lib/adminAccess'
 
 export default function AdminOnly({ children }) {
   const router = useRouter()
   const [isChecking, setIsChecking] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [authError, setAuthError] = useState('')
 
   useEffect(() => {
-    const checkAdmin = () => {
-      const adminStatus = isAdminUser()
-      setIsAdmin(adminStatus)
-      setIsChecking(false)
+    let active = true
 
-      if (!adminStatus) {
-        // Redirect non-admin users to homepage
-        router.push('/')
+    const checkAdmin = async () => {
+      try {
+        const { data: { user }, error } = await supabase.auth.getUser()
+        if (!active) return
+
+        if (error) {
+          setAuthError(error.message)
+          setIsChecking(false)
+          return
+        }
+
+        const adminStatus = isAdminUser(user)
+        setIsAdmin(adminStatus)
+        setIsChecking(false)
+
+        if (!user) {
+          router.replace('/auth')
+        } else if (!adminStatus) {
+          router.replace('/')
+        }
+      } catch (error) {
+        if (!active) return
+        setAuthError(error instanceof Error ? error.message : 'Unable to check administrator access.')
+        setIsChecking(false)
       }
     }
 
-    checkAdmin()
+    void checkAdmin()
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (!active) return
+      const user = session?.user ?? null
+      const adminStatus = isAdminUser(user)
+      setIsAdmin(adminStatus)
+      if (!user) router.replace('/auth')
+      else if (!adminStatus) router.replace('/')
+    })
+
+    return () => {
+      active = false
+      subscription.unsubscribe()
+    }
   }, [router])
+
+  if (authError) {
+    return <p role="alert" className="p-6 text-center text-red-600">Authentication error: {authError}</p>
+  }
 
   if (isChecking) {
     return (
