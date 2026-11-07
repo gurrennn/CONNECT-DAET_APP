@@ -73,6 +73,17 @@ If you want to test with sample data:
 
 The app does not create accounts. Manage the administrator password through Supabase Auth.
 
+### Configure Gemini AI reports
+
+1. Revoke and replace any Gemini API key that has been shared or exposed.
+2. Put the replacement key in the project-root `.env.local` file as `GEMINI_API_KEY=your_new_key`. Do not add a `NEXT_PUBLIC_` prefix or commit the key.
+3. Restart the Next.js development server after changing environment variables. For deployment, add `GEMINI_API_KEY` in the hosting provider's server environment settings.
+4. Run the updated `supabase-schema.sql`; it adds the administrator-only `get_tourism_ai_metrics` function used to retrieve aggregate records for the last 30 days.
+
+The Gemini brief uses the `gemini-3.5-flash-lite` model and reports recorded revenue, visitation events, and facility measurements. Google lists this model with free-tier input/output pricing, subject to project quota and access limits. It does not claim to measure jobs; the database currently has no verified employment data. The separate “Example Forecasts” dashboard section is sample data, not Gemini output.
+
+Generating a brief sends these aggregate metrics (not visitor names, emails, or row-level records) to Google's Gemini API for processing. Confirm this data sharing is appropriate for your municipality before using production records.
+
 ## Step 8: Check Data in Supabase Dashboard
 
 To verify your data is being stored correctly:

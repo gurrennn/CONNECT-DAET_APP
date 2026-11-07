@@ -1,5 +1,46 @@
 import { supabase } from './supabaseClient'
 
+export interface LiveTourismMetrics {
+  revenue_php: number
+  transaction_count: number
+  visitor_events: number
+  average_resource_usage_percent: number | null
+  resource_readings: number
+  average_energy_usage: number | null
+  average_water_usage: number | null
+}
+
+function isLiveTourismMetrics(value: unknown): value is LiveTourismMetrics {
+  if (!value || typeof value !== 'object') return false
+
+  const metrics = value as Record<string, unknown>
+  return (
+    typeof metrics.revenue_php === 'number' &&
+    typeof metrics.transaction_count === 'number' &&
+    typeof metrics.visitor_events === 'number' &&
+    (typeof metrics.average_resource_usage_percent === 'number' ||
+      metrics.average_resource_usage_percent === null) &&
+    typeof metrics.resource_readings === 'number' &&
+    (typeof metrics.average_energy_usage === 'number' || metrics.average_energy_usage === null) &&
+    (typeof metrics.average_water_usage === 'number' || metrics.average_water_usage === null)
+  )
+}
+
+export const getLiveTourismMetrics = async (): Promise<LiveTourismMetrics> => {
+  const periodStart = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+  const { data, error } = await supabase.rpc('get_tourism_ai_metrics', { p_since: periodStart })
+
+  if (error) {
+    throw new Error(`Unable to load live tourism metrics: ${error.message}`)
+  }
+
+  if (!isLiveTourismMetrics(data)) {
+    throw new Error('Tourism metrics returned an unexpected format.')
+  }
+
+  return data
+}
+
 // Real data queries using Supabase
 export const getVisitorSpending = async () => {
   try {

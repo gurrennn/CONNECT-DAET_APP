@@ -135,3 +135,56 @@ CREATE POLICY "Admin read access for analytics" ON reward_history FOR SELECT USI
 CREATE POLICY "Admin read access for analytics" ON feedback FOR SELECT USING (auth.uid() = 'c89843cd-b551-4925-b777-6c5c5cd3cb65'::uuid);
 CREATE POLICY "Admin read access for analytics" ON profiles FOR SELECT USING (auth.uid() = 'c89843cd-b551-4925-b777-6c5c5cd3cb65'::uuid);
 CREATE POLICY "Admin read access for analytics" ON facility_usage FOR SELECT USING (auth.uid() = 'c89843cd-b551-4925-b777-6c5c5cd3cb65'::uuid);
+
+CREATE OR REPLACE FUNCTION public.get_tourism_ai_metrics(p_since TIMESTAMPTZ)
+RETURNS JSONB
+LANGUAGE plpgsql
+STABLE
+SECURITY INVOKER
+SET search_path = public, pg_temp
+AS $function$
+BEGIN
+  IF auth.uid() IS DISTINCT FROM 'c89843cd-b551-4925-b777-6c5c5cd3cb65'::uuid THEN
+    RAISE EXCEPTION 'Not authorized to read tourism analytics';
+  END IF;
+
+  IF p_since IS NULL THEN
+    RAISE EXCEPTION 'A reporting period is required';
+  END IF;
+
+  RETURN jsonb_build_object(
+    'revenue_php',
+      (SELECT COALESCE(SUM(amount), 0)
+       FROM shop_transactions
+       WHERE created_at >= p_since)
+      + (SELECT COALESCE(SUM(price), 0)
+         FROM tours_bookings
+         WHERE created_at >= p_since AND status = 'confirmed'),
+    'transaction_count',
+      (SELECT COUNT(*) FROM shop_transactions WHERE created_at >= p_since)
+      + (SELECT COUNT(*)
+         FROM tours_bookings
+         WHERE created_at >= p_since AND status = 'confirmed'),
+    'visitor_events',
+      (SELECT COUNT(*) FROM museum_scans WHERE created_at >= p_since)
+      + (SELECT COUNT(*) FROM experiences_checkins WHERE created_at >= p_since),
+    'average_resource_usage_percent',
+      (SELECT ROUND(AVG(usage_percentage)::numeric, 1)
+       FROM facility_usage
+       WHERE recorded_at >= p_since),
+    'resource_readings',
+      (SELECT COUNT(*) FROM facility_usage WHERE recorded_at >= p_since),
+    'average_energy_usage',
+      (SELECT ROUND(AVG(energy_usage)::numeric, 2)
+       FROM facility_usage
+       WHERE recorded_at >= p_since),
+    'average_water_usage',
+      (SELECT ROUND(AVG(water_usage)::numeric, 2)
+       FROM facility_usage
+       WHERE recorded_at >= p_since)
+  );
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.get_tourism_ai_metrics(TIMESTAMPTZ) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.get_tourism_ai_metrics(TIMESTAMPTZ) TO authenticated;

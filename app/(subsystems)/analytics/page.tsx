@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader } from "../../components/ui/Card"
 import { Button } from "../../components/ui/Button"
@@ -26,14 +26,29 @@ import {
   getSustainabilityScore,
   getEconomicImpact,
   getSocialImpact,
-  getEnvironmentalImpact
+  getEnvironmentalImpact,
+  getLiveTourismMetrics,
+  type LiveTourismMetrics
 } from '../../lib/analytics-fetcher'
+
+interface ChartInfo {
+  title: string
+  description: string
+  howItWorks: string
+  metrics: string
+}
 
 function AnalyticsContent() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
-  const [selectedChartInfo, setSelectedChartInfo] = useState<any>(null)
+  const [selectedChartInfo, setSelectedChartInfo] = useState<ChartInfo | null>(null)
+  const chartDialogCloseRef = useRef<HTMLButtonElement>(null)
   const [generatingReport, setGeneratingReport] = useState<string | null>(null)
+  const [aiReportLoading, setAiReportLoading] = useState(false)
+  const [aiReport, setAiReport] = useState('')
+  const [aiReportError, setAiReportError] = useState('')
+  const [liveMetrics, setLiveMetrics] = useState<LiveTourismMetrics | null>(null)
+  const [liveMetricsError, setLiveMetricsError] = useState('')
   const [user, setUser] = useState<any>(null)
   const [signingOut, setSigningOut] = useState(false)
   const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d')
@@ -118,6 +133,17 @@ function AnalyticsContent() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        const liveMetricsRequest = getLiveTourismMetrics()
+          .then(metrics => {
+            setLiveMetrics(metrics)
+            setLiveMetricsError('')
+          })
+          .catch(error => {
+            console.error('Error fetching live tourism KPIs:', error)
+            setLiveMetrics(null)
+            setLiveMetricsError('Live metrics could not be loaded. Confirm you have applied the updated Supabase schema and try refreshing.')
+          })
+
         const [
           visitorSpending,
           footTraffic,
@@ -141,7 +167,8 @@ function AnalyticsContent() {
           getSustainabilityScore(),
           getEconomicImpact(),
           getSocialImpact(),
-          getEnvironmentalImpact()
+          getEnvironmentalImpact(),
+          liveMetricsRequest
         ])
 
         setData({
@@ -208,6 +235,58 @@ function AnalyticsContent() {
 
   const handleChartClick = (chartKey: string) => {
     setSelectedChartInfo(chartInfo[chartKey as keyof typeof chartInfo])
+  }
+
+  useEffect(() => {
+    if (!selectedChartInfo) return
+
+    const previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    chartDialogCloseRef.current?.focus()
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSelectedChartInfo(null)
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [selectedChartInfo])
+
+  const generateAiReport = async () => {
+    setAiReportLoading(true)
+    setAiReportError('')
+    setAiReport('')
+
+    try {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError) throw sessionError
+      if (!session) throw new Error('Your session expired. Sign in again to generate a report.')
+
+      const response = await fetch('/api/ai-tourism-report', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${session.access_token}`
+        }
+      })
+      const result: { report?: string; error?: string } = await response.json()
+
+      if (!response.ok) {
+        throw new Error(result.error || 'Unable to generate the AI report.')
+      }
+
+      if (!result.report) {
+        throw new Error('The AI service returned an empty report.')
+      }
+
+      setAiReport(result.report)
+    } catch (error) {
+      setAiReportError(error instanceof Error ? error.message : 'Unable to generate the AI report.')
+    } finally {
+      setAiReportLoading(false)
+    }
   }
 
   const generateReport = async (reportType: string) => {
@@ -356,41 +435,68 @@ End of Summary
             Tourism Impact Assessment & Data Analytics
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            AI-powered analytics system for monitoring visitor spending, job creation, and resource usage to drive sustainable development decisions
+            Explore tourism metrics and generate a Gemini brief from recorded, aggregated Supabase data.
+          </p>
+          <p className="text-sm text-amber-700 mt-3">
+            Other dashboard charts and forecast panels may still show sample data. The Gemini brief uses its own live 30-day database aggregates.
           </p>
         </div>
 
-        {/* Key Metrics Dashboard */}
+        {/* Live Metrics Dashboard */}
+        <h2 className="text-lg font-semibold text-gray-800 mb-3">Live metrics · last 30 days</h2>
+        {liveMetricsError && (
+          <p role="alert" className="mb-4 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-700">
+            {liveMetricsError}
+          </p>
+        )}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold mb-2">₱45.2M</div>
-              <div className="text-blue-100">Monthly Revenue</div>
-              <div className="text-sm text-blue-200 mt-2">↑ 12% from last month</div>
+              <div className="text-3xl font-bold mb-2">
+                {liveMetrics
+                  ? liveMetrics.transaction_count > 0
+                    ? `₱${liveMetrics.revenue_php.toLocaleString('en-PH')}`
+                    : 'No data'
+                  : 'Unavailable'}
+              </div>
+              <div className="text-blue-100">Recorded Tourism Revenue</div>
+              <div className="text-sm text-blue-200 mt-2">Shop sales + confirmed tour bookings</div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-green-600 to-green-700 text-white">
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold mb-2">8,234</div>
-              <div className="text-green-100">Jobs Created</div>
-              <div className="text-sm text-green-200 mt-2">↑ 5% from last quarter</div>
+              <div className="text-3xl font-bold mb-2">Not tracked</div>
+              <div className="text-green-100">Tourism Jobs</div>
+              <div className="text-sm text-green-200 mt-2">No verified employment data source yet</div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-purple-600 to-purple-700 text-white">
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold mb-2">156K</div>
-              <div className="text-purple-100">Monthly Visitors</div>
-              <div className="text-sm text-purple-200 mt-2">↑ 8% from last month</div>
+              <div className="text-3xl font-bold mb-2">
+                {liveMetrics
+                  ? liveMetrics.visitor_events > 0
+                    ? liveMetrics.visitor_events.toLocaleString()
+                    : 'No data'
+                  : 'Unavailable'}
+              </div>
+              <div className="text-purple-100">Recorded Visitor Events</div>
+              <div className="text-sm text-purple-200 mt-2">Museum scans + experience check-ins; not unique people</div>
             </CardContent>
           </Card>
 
           <Card className="bg-gradient-to-r from-orange-600 to-orange-700 text-white">
             <CardContent className="p-6 text-center">
-              <div className="text-3xl font-bold mb-2">92%</div>
-              <div className="text-orange-100">Resource Efficiency</div>
-              <div className="text-sm text-orange-200 mt-2">↑ 3% improvement</div>
+              <div className="text-3xl font-bold mb-2">
+                {liveMetrics?.average_resource_usage_percent === null || !liveMetrics
+                  ? liveMetricsError ? 'Unavailable' : 'No data'
+                  : `${liveMetrics.average_resource_usage_percent}%`}
+              </div>
+              <div className="text-orange-100">Average Facility Usage</div>
+              <div className="text-sm text-orange-200 mt-2">
+                {liveMetrics ? `${liveMetrics.resource_readings} recorded readings` : 'Supabase facility data'}
+              </div>
             </CardContent>
           </Card>
         </div>
@@ -398,7 +504,8 @@ End of Summary
         {/* Predictive Analytics */}
         {data.predictive && (
           <div className="mb-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">AI-Powered Predictions</h2>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Example Forecasts</h2>
+            <p className="text-sm text-amber-700 mb-6">These sample values are not generated from live data or by Gemini.</p>
             <PredictiveAnalytics data={data.predictive} />
           </div>
         )}
@@ -602,19 +709,19 @@ End of Summary
                 <Button 
                   variant="success"
                   className="w-full mb-2"
-                  onClick={() => generateReport('tourism-impact')}
-                  disabled={generatingReport === 'tourism-impact'}
+                  onClick={generateAiReport}
+                  disabled={aiReportLoading}
                 >
-                  {generatingReport === 'tourism-impact' ? (
+                  {aiReportLoading ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2 inline-block"></div>
-                      Generating Tourism Impact...
+                      Analyzing tourism data...
                     </>
                   ) : (
-                    '🏖️ Tourism Impact Assessment'
+                    '✨ Generate Gemini AI Brief'
                   )}
                 </Button>
-                <p className="text-sm text-gray-400">AI-driven tourism analysis</p>
+                <p className="text-sm text-gray-400">Analyzes the last 30 days of aggregated Supabase data</p>
               </div>
               
               <div className="text-center">
@@ -636,6 +743,20 @@ End of Summary
                 <p className="text-sm text-gray-400">Key metrics only</p>
               </div>
             </div>
+            {aiReportError && (
+              <p role="alert" className="mt-6 rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-700">
+                {aiReportError}
+              </p>
+            )}
+            {aiReport && (
+              <div aria-live="polite" className="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-5 text-gray-800">
+                <h3 className="mb-2 font-semibold text-blue-900">Gemini Tourism Impact Brief</h3>
+                <p className="whitespace-pre-wrap">{aiReport}</p>
+                <p className="mt-3 text-xs text-gray-600">
+                  AI-generated analysis of 30-day aggregate records. No verified jobs data is available in this system.
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -687,52 +808,54 @@ End of Summary
 
       {/* Chart Info Modal */}
       {selectedChartInfo && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50 p-4"
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-gray-950/60 p-4 backdrop-blur-sm sm:p-6"
           onClick={() => setSelectedChartInfo(null)}
         >
-          <div 
-            className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="chart-dialog-title"
+            className="my-auto max-h-[min(85vh,48rem)] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl ring-1 ring-black/10"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-6">
-              <div className="flex justify-between items-start mb-4">
-                <h2 className="text-2xl font-bold text-gray-900">{selectedChartInfo.title}</h2>
-                <button 
-                  onClick={() => setSelectedChartInfo(null)}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
-                >
-                  ×
-                </button>
-              </div>
-              
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-lg font-semibold text-blue-600 mb-2">Description</h3>
-                  <p className="text-gray-700">{selectedChartInfo.description}</p>
-                </div>
-                
-                <div>
-                  <h3 className="text-lg font-semibold text-green-600 mb-2">How It Works</h3>
-                  <p className="text-gray-700 whitespace-pre-line">{selectedChartInfo.howItWorks}</p>
-                </div>
-                
-                <div>
-                  <h3 className="text-lg font-semibold text-purple-600 mb-2">Key Metrics</h3>
-                  <p className="text-gray-700 whitespace-pre-line">{selectedChartInfo.metrics}</p>
-                </div>
-              </div>
-              
-              <div className="mt-6 flex justify-end">
-                <Button 
-                  variant="primary"
-                  onClick={() => setSelectedChartInfo(null)}
-                >
-                  Close
-                </Button>
-              </div>
+            <div className="flex items-start justify-between gap-4 border-b border-gray-200 px-5 py-5 sm:px-7">
+              <h2 id="chart-dialog-title" className="text-xl font-bold text-gray-900 sm:text-2xl">
+                {selectedChartInfo.title}
+              </h2>
+              <button
+                ref={chartDialogCloseRef}
+                type="button"
+                onClick={() => setSelectedChartInfo(null)}
+                aria-label="Close chart details"
+                className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-2xl text-gray-500 hover:bg-gray-100 hover:text-gray-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              >
+                ×
+              </button>
             </div>
-          </div>
+            <div className="space-y-6 px-5 py-6 sm:px-7">
+              <section>
+                <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-blue-700">Description</h3>
+                <p className="leading-7 text-gray-700">{selectedChartInfo.description}</p>
+              </section>
+              <section>
+                <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-green-700">How it works</h3>
+                <ul className="list-disc space-y-2 pl-5 leading-6 text-gray-700">
+                  {selectedChartInfo.howItWorks.split('\n').map((item) => (
+                    <li key={item}>{item.replace(/^•\s*/, '')}</li>
+                  ))}
+                </ul>
+              </section>
+              <section>
+                <h3 className="mb-2 text-sm font-semibold uppercase tracking-wide text-purple-700">Key metrics</h3>
+                <ul className="list-disc space-y-2 pl-5 leading-6 text-gray-700">
+                  {selectedChartInfo.metrics.split('\n').map((item) => (
+                    <li key={item}>{item.replace(/^•\s*/, '')}</li>
+                  ))}
+                </ul>
+              </section>
+            </div>
+          </section>
         </div>
       )}
     </div>
