@@ -3,9 +3,9 @@ import { Button } from "./components/ui/Button";
 
 export default function Home() {
   return (
-    <div className="min-h-full bg-gray-50">
+    <div className="min-h-full bg-gray-50 dark:bg-gray-900">
       {/* Hero Section */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white">
+      <div className="bg-gradient-to-r from-blue-600 to-blue-700 dark:from-blue-700 dark:to-blue-800 text-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">
@@ -23,7 +23,7 @@ export default function Home() {
 
       {/* Features Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <h2 className="text-3xl font-bold text-center mb-12 text-gray-800">
+        <h2 className="text-3xl font-bold text-center mb-12 text-gray-800 dark:text-gray-100">
           Explore Our Services
         </h2>
         
@@ -121,24 +121,24 @@ export default function Home() {
       </div>
 
       {/* Stats Section */}
-      <div className="bg-blue-600 text-white py-12">
+      <div className="bg-blue-600 dark:bg-blue-800 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
             <div>
               <div className="text-3xl font-bold mb-2">11</div>
-              <div className="text-blue-100">Integrated Systems</div>
+              <div className="text-blue-100 dark:text-blue-200">Integrated Systems</div>
             </div>
             <div>
               <div className="text-3xl font-bold mb-2">50+</div>
-              <div className="text-blue-100">Local Attractions</div>
+              <div className="text-blue-100 dark:text-blue-200">Local Attractions</div>
             </div>
             <div>
               <div className="text-3xl font-bold mb-2">24/7</div>
-              <div className="text-blue-100">Tourist Support</div>
+              <div className="text-blue-100 dark:text-blue-200">Tourist Support</div>
             </div>
             <div>
               <div className="text-3xl font-bold mb-2">1M+</div>
-              <div className="text-blue-100">Happy Visitors</div>
+              <div className="text-blue-100 dark:text-blue-200">Happy Visitors</div>
             </div>
           </div>
         </div>

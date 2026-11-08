@@ -32,6 +32,7 @@ export const Card: React.FC<CardProps> = ({
     bg-white rounded-2xl border border-gray-200
     ${paddingClasses[padding]}
     ${shadowClasses[shadow]}
+    transition-colors duration-200
     ${className}
   `
 

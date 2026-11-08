@@ -1,0 +1,73 @@
+/* Print-friendly styles for analytics dashboard */
+@media print {
+  /* Hide navigation and non-essential elements */
+  nav,
+  button,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Optimize page layout */
+  body {
+    background: white !important;
+    color: black !important;
+  }
+
+  /* Make charts and cards print-friendly */
+  .bg-gradient-to-r,
+  .bg-blue-50,
+  .bg-green-50,
+  .bg-gray-50 {
+    background: white !important;
+    border: 1px solid #ddd !important;
+  }
+
+  /* Ensure cards don't break across pages */
+  .card,
+  .chart-container {
+    page-break-inside: avoid;
+    margin-bottom: 1rem;
+  }
+
+  /* Remove shadows for cleaner print */
+  * {
+    box-shadow: none !important;
+  }
+
+  /* Optimize typography */
+  h1 {
+    font-size: 24pt !important;
+  }
+
+  h2 {
+    font-size: 18pt !important;
+  }
+
+  h3 {
+    font-size: 14pt !important;
+  }
+
+  p, span {
+    font-size: 11pt !important;
+  }
+
+  /* Make links visible */
+  a:after {
+    content: " (" attr(href) ")";
+    font-size: 9pt;
+  }
+
+  /* Optimize grid layouts */
+  .grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* Page breaks */
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+
+  .page-break {
+    page-break-before: always;
+  }
+}

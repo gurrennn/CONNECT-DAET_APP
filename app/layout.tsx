@@ -28,7 +28,10 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      <head>
+        <link rel="stylesheet" href="/(subsystems)/analytics/analytics-print.css" media="print" />
+      </head>
+      <body className="min-h-full flex flex-col bg-gray-50 transition-colors duration-200">
         <Navigation />
         <main className="flex-1">
           {children}

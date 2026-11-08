@@ -15,6 +15,15 @@ import {
   ResourceUsageChart
 } from './components/Charts'
 import { PredictiveAnalytics, SustainabilityScore } from './components/PredictiveAnalytics'
+import { DateRangeSelector, type DateRangePreset } from './components/DateRangeSelector'
+import { FilterBar, type FilterOptions } from './components/FilterBar'
+import { ExportControls } from './components/ExportControls'
+import { AutomatedInsights } from './components/AutomatedInsights'
+import { QuickStats } from './components/QuickStats'
+import { MetricComparison } from './components/MetricComparison'
+import { AnomalyDetector } from './components/AnomalyDetector'
+import { TopBottomLists } from './components/TopBottomLists'
+import { exportAllAnalyticsData, exportToCSV, exportToJSON } from '../../lib/exportUtils'
 import {
   getVisitorSpending,
   getFootTraffic,
@@ -41,6 +50,7 @@ interface ChartInfo {
 function AnalyticsContent() {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [selectedChartInfo, setSelectedChartInfo] = useState<ChartInfo | null>(null)
   const chartDialogCloseRef = useRef<HTMLButtonElement>(null)
   const [generatingReport, setGeneratingReport] = useState<string | null>(null)
@@ -51,7 +61,13 @@ function AnalyticsContent() {
   const [liveMetricsError, setLiveMetricsError] = useState('')
   const [user, setUser] = useState<any>(null)
   const [signingOut, setSigningOut] = useState(false)
-  const [dateRange, setDateRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d')
+  const [dateRange, setDateRange] = useState<DateRangePreset>('30d')
+  const [compareEnabled, setCompareEnabled] = useState(false)
+  const [filters, setFilters] = useState<FilterOptions>({
+    team: 'All Teams',
+    location: 'All Locations',
+    visitorType: 'All Visitors'
+  })
   const [data, setData] = useState<{
     visitorSpending: Array<{ month: string; spending: number }>
     footTraffic: Array<{ date: string; visitors: number }>
@@ -130,69 +146,103 @@ function AnalyticsContent() {
     environmentalImpact: null
   })
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const liveMetricsRequest = getLiveTourismMetrics()
-          .then(metrics => {
-            setLiveMetrics(metrics)
-            setLiveMetricsError('')
-          })
-          .catch(error => {
-            console.error('Error fetching live tourism KPIs:', error)
-            setLiveMetrics(null)
-            setLiveMetricsError('Live metrics could not be loaded. Confirm you have applied the updated Supabase schema and try refreshing.')
-          })
-
-        const [
-          visitorSpending,
-          footTraffic,
-          rewards,
-          sentiment,
-          demographics,
-          resourceUsage,
-          predictive,
-          sustainability,
-          economicImpact,
-          socialImpact,
-          environmentalImpact
-        ] = await Promise.all([
-          getVisitorSpending(),
-          getFootTraffic(),
-          getRewardsData(),
-          getSentimentAnalysis(),
-          getDemographics(),
-          getResourceUsage(),
-          getPredictiveTrends(),
-          getSustainabilityScore(),
-          getEconomicImpact(),
-          getSocialImpact(),
-          getEnvironmentalImpact(),
-          liveMetricsRequest
-        ])
-
-        setData({
-          visitorSpending,
-          footTraffic,
-          rewards,
-          sentiment,
-          demographics,
-          resourceUsage,
-          predictive,
-          sustainability,
-          economicImpact,
-          socialImpact,
-          environmentalImpact
+  const fetchData = async () => {
+    setRefreshing(true)
+    try {
+      const liveMetricsRequest = getLiveTourismMetrics()
+        .then(metrics => {
+          setLiveMetrics(metrics)
+          setLiveMetricsError('')
         })
-      } catch (error) {
-        console.error('Error fetching analytics data:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
+        .catch(error => {
+          console.error('Error fetching live tourism KPIs:', error)
+          setLiveMetrics(null)
+          setLiveMetricsError('Live metrics could not be loaded. Confirm you have applied the updated Supabase schema and try refreshing.')
+        })
 
+      const [
+        visitorSpending,
+        footTraffic,
+        rewards,
+        sentiment,
+        demographics,
+        resourceUsage,
+        predictive,
+        sustainability,
+        economicImpact,
+        socialImpact,
+        environmentalImpact
+      ] = await Promise.all([
+        getVisitorSpending(),
+        getFootTraffic(),
+        getRewardsData(),
+        getSentimentAnalysis(),
+        getDemographics(),
+        getResourceUsage(),
+        getPredictiveTrends(),
+        getSustainabilityScore(),
+        getEconomicImpact(),
+        getSocialImpact(),
+        getEnvironmentalImpact(),
+        liveMetricsRequest
+      ])
+
+      setData({
+        visitorSpending,
+        footTraffic,
+        rewards,
+        sentiment,
+        demographics,
+        resourceUsage,
+        predictive,
+        sustainability,
+        economicImpact,
+        socialImpact,
+        environmentalImpact
+      })
+    } catch (error) {
+      console.error('Error fetching analytics data:', error)
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }
+
+  useEffect(() => {
     fetchData()
-  }, [])
+  }, [dateRange, filters])
+
+  const handleDateRangeChange = (preset: DateRangePreset, startDate?: Date, endDate?: Date) => {
+    setDateRange(preset)
+    // In production, you'd pass these dates to your data fetching functions
+    console.log('Date range changed:', preset, startDate, endDate)
+  }
+
+  const handleFilterChange = (newFilters: FilterOptions) => {
+    setFilters(newFilters)
+    // In production, apply filters to data fetching
+    console.log('Filters changed:', newFilters)
+  }
+
+  const handleFilterReset = () => {
+    setFilters({
+      team: 'All Teams',
+      location: 'All Locations',
+      visitorType: 'All Visitors'
+    })
+  }
+
+  const handleExport = (format: 'csv' | 'json' | 'pdf' | 'xlsx') => {
+    if (format === 'pdf') {
+      alert('PDF export coming soon! For now, use Print View.')
+      return
+    }
+    exportAllAnalyticsData(data, format)
+  }
+
+  const handleRefresh = () => {
+    fetchData()
+  }
 
   const chartInfo = {
     'visitor-spending': {
@@ -427,20 +477,102 @@ End of Summary
     )
   }
 
+  // Sample anomaly data (in production, this would come from your anomaly detection algorithm)
+  const sampleAnomalies = [
+    {
+      id: '1',
+      date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+      metric: 'Beach Area Capacity',
+      expectedValue: 75,
+      actualValue: 95,
+      deviation: 26.7,
+      severity: 'high' as const,
+      description: 'Beach capacity exceeded expected levels',
+      possibleCause: 'Weekend festival event attracted more visitors than anticipated'
+    }
+  ]
+
+  // Sample top/bottom facility data
+  const facilityPerformance = data.resourceUsage.map(r => ({
+    name: r.facility,
+    value: r.usage,
+    change: Math.random() * 20 - 5 // Mock change data
+  }))
+
+  // Sample comparison data
+  const comparisonMetrics = [
+    { label: 'Total Revenue', current: data.economicImpact?.total_revenue || 0, previous: 2500000, format: 'currency' as const },
+    { label: 'Total Visitors', current: data.footTraffic.reduce((sum, d) => sum + d.visitors, 0), previous: 8500, format: 'number' as const },
+    { label: 'Satisfaction Rate', current: 87, previous: 84, format: 'percent' as const },
+  ]
+
   return (
-    <div className="min-h-full bg-gray-50 py-8">
+    <div className="min-h-full bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-4">
             Tourism Impact Assessment & Data Analytics
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
             Explore tourism metrics and generate a Gemini brief from recorded, aggregated Supabase data.
           </p>
-          <p className="text-sm text-amber-700 mt-3">
+          <p className="text-sm text-amber-700 dark:text-amber-400 mt-3">
             Other dashboard charts and forecast panels may still show sample data. The Gemini brief uses its own live 30-day database aggregates.
           </p>
         </div>
+
+        {/* Date Range Selector */}
+        <DateRangeSelector
+          value={dateRange}
+          onChange={handleDateRangeChange}
+          showComparison={true}
+          onCompareToggle={setCompareEnabled}
+        />
+
+        {/* Filters */}
+        <FilterBar
+          filters={filters}
+          onChange={handleFilterChange}
+          onReset={handleFilterReset}
+        />
+
+        {/* Export and Refresh Controls */}
+        <ExportControls
+          onExport={handleExport}
+          onRefresh={handleRefresh}
+          isRefreshing={refreshing}
+        />
+
+        {/* Quick Stats */}
+        <QuickStats
+          totalRevenue={data.economicImpact?.total_revenue || 2890000}
+          totalVisitors={data.footTraffic.reduce((sum, d) => sum + d.visitors, 0) || 9234}
+          avgSatisfaction={87}
+          sustainabilityScore={data.sustainability?.overall || 86}
+        />
+
+        {/* Automated Insights */}
+        <AutomatedInsights data={data} />
+
+        {/* Period Comparison */}
+        {compareEnabled && (
+          <MetricComparison
+            data={comparisonMetrics}
+            periodLabel="previous period"
+          />
+        )}
+
+        {/* Anomaly Detection */}
+        <AnomalyDetector anomalies={sampleAnomalies} />
+
+        {/* Top/Bottom Performers */}
+        <TopBottomLists
+          title="Facility Performance"
+          items={facilityPerformance}
+          valueFormat="percent"
+          showChange={true}
+        />
 
         {/* Live Metrics Dashboard */}
         <h2 className="text-lg font-semibold text-gray-800 mb-3">Live metrics · last 30 days</h2>
