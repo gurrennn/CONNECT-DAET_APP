@@ -55,12 +55,6 @@ export default function Navigation({ currentPath }: NavigationProps) {
     ...(isAdminUser(user)
       ? [
           { name: '📊 Analytics', href: '/analytics' },
-          { name: '🛍️ Shop', href: '/shop' },
-          { name: '🗺️ Tours', href: '/tours' },
-          { name: '🏛️ Museum', href: '/museum' },
-          { name: '🎨 Experiences', href: '/experiences' },
-          { name: '🏆 Rewards', href: '/rewards' },
-          { name: '💬 Feedback', href: '/feedback' },
         ]
       : []),
   ]
