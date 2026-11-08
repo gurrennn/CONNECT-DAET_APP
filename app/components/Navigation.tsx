@@ -12,7 +12,7 @@ interface NavigationProps {
   currentPath?: string
 }
 
-export const Navigation: React.FC<NavigationProps> = ({ currentPath }) => {
+export default function Navigation({ currentPath }: NavigationProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -53,7 +53,15 @@ export const Navigation: React.FC<NavigationProps> = ({ currentPath }) => {
   const navigationItems = [
     { name: 'Home', href: '/' },
     ...(isAdminUser(user)
-      ? [{ name: 'Analytics', href: '/analytics' }]
+      ? [
+          { name: '📊 Analytics', href: '/analytics' },
+          { name: '🛍️ Shop', href: '/shop' },
+          { name: '🗺️ Tours', href: '/tours' },
+          { name: '🏛️ Museum', href: '/museum' },
+          { name: '🎨 Experiences', href: '/experiences' },
+          { name: '🏆 Rewards', href: '/rewards' },
+          { name: '💬 Feedback', href: '/feedback' },
+        ]
       : []),
   ]
 
