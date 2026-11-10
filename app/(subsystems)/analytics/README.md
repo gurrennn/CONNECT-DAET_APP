@@ -149,7 +149,7 @@ This will help us build accurate cross-table queries for the municipal dashboard
 
 ### Install Dependencies
 ```bash
-npm install recharts @tremor/react --legacy-peer-deps
+npm ci
 ```
 
 ### Development Server
