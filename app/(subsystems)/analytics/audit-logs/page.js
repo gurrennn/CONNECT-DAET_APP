@@ -95,10 +95,10 @@ export default function AuditLogsPage() {
       <Breadcrumbs items={[{ label: 'Dashboard', href: '/analytics' }, { label: 'Audit Logs' }]} />
       <AnalyticsHeader title="Audit Logs" subtitle="Track all administrative actions in the system" />
 
-      {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">⚠️ {error}</div>}
+      {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{error}</div>}
 
       <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-800 mb-5">
-        🔒 Audit logs are read-only and protected. Administrators cannot modify or delete log entries.
+        Audit logs are read-only and protected. Administrators cannot modify or delete log entries.
       </div>
 
       {/* Filters */}
@@ -108,12 +108,12 @@ export default function AuditLogsPage() {
           placeholder="Search by action, module, or admin…"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-          className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-[200px]"
+          className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-[200px]"
         />
         <select
           value={filterAction}
           onChange={(e) => { setFilterAction(e.target.value); setPage(1) }}
-          className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Actions</option>
           {Object.entries(AUDIT_ACTION_LABELS).map(([val, label]) => (

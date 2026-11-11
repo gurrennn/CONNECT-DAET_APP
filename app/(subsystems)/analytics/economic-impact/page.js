@@ -249,7 +249,7 @@ export default function EconomicImpactPage() {
 
       {/* Disclaimer */}
       <div className="mb-5 p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs">
-        ⚠️ <strong>Important:</strong> Amounts labeled "Estimated" are approximations based on available data, not verified financial records.
+        <strong>Important:</strong> Amounts labeled "Estimated" are approximations based on available data, not verified financial records.
         Values do not represent direct municipal tax revenue.
       </div>
 
@@ -259,21 +259,18 @@ export default function EconomicImpactPage() {
           title="Total Estimated Revenue (This Page)"
           value={formatPeso(totalRevenue, { compact: true })}
           subtitle="Estimated only"
-          icon="💰"
           colorClass="from-emerald-500 to-emerald-600"
         />
         <KPICard
           title="Total Employment Records"
           value={formatNumber(totalEmployment)}
           subtitle="Jobs tracked"
-          icon="👷"
           colorClass="from-blue-500 to-blue-600"
         />
         <KPICard
           title="Verified Records"
           value={`${verifiedCount} / ${records.length}`}
           subtitle="On this page"
-          icon="✅"
           colorClass="from-purple-500 to-purple-600"
         />
       </div>
@@ -293,12 +290,12 @@ export default function EconomicImpactPage() {
           placeholder="Search…"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-          className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-[180px]"
+          className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-[180px]"
         />
         <select
           value={filterCategory}
           onChange={(e) => { setFilterCategory(e.target.value); setPage(1) }}
-          className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Categories</option>
           {ECONOMIC_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}

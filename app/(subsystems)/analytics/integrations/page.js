@@ -164,8 +164,8 @@ export default function IntegrationsPage() {
         actions={<button onClick={() => { setEditSource(null); setForm(EMPTY_FORM); setFormErrors({}); setShowModal(true) }} className="px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition min-h-[44px]">+ Register Source</button>}
       />
 
-      {successMsg && <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">✅ {successMsg}</div>}
-      {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">⚠️ {error}</div>}
+      {successMsg && <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">{successMsg}</div>}
+      {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{error}</div>}
 
       {/* Tabs */}
       <div className="flex gap-2 mb-5 border-b border-gray-200">
@@ -179,7 +179,7 @@ export default function IntegrationsPage() {
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            {tab === 'sources' ? '📁 Data Sources' : tab === 'subsystems' ? '🔗 CONNECT-DAET Subsystems' : '📂 Import Logs'}
+            {tab === 'sources' ? 'Data Sources' : tab === 'subsystems' ? 'CONNECT-DAET Subsystems' : 'Import Logs'}
           </button>
         ))}
       </div>
@@ -198,7 +198,7 @@ export default function IntegrationsPage() {
       {activeTab === 'subsystems' && (
         <div>
           <div className="mb-4 p-4 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm">
-            ⚠️ <strong>Integration Status:</strong> The other CONNECT-DAET subsystems are developed independently by separate teams.
+            <strong>Integration Status:</strong> The other CONNECT-DAET subsystems are developed independently by separate teams.
             These integrations are listed for future reference. All are currently <strong>Pending Integration</strong> or <strong>Not Connected</strong>.
             Do not interpret any subsystem as currently connected to TIA-DAS.
           </div>
@@ -215,7 +215,6 @@ export default function IntegrationsPage() {
                   </span>
                 </div>
                 <div className="mt-3 pt-3 border-t border-gray-100 text-xs text-gray-400 flex items-center gap-1">
-                  <span>🔌</span>
                   <span>Not connected — future integration</span>
                 </div>
               </div>

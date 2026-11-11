@@ -219,8 +219,8 @@ export default function SustainabilityPage() {
         actions={<button onClick={openAdd} className="px-4 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition min-h-[44px]">+ Add Record</button>}
       />
 
-      {successMsg && <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">✅ {successMsg}</div>}
-      {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">⚠️ {error}</div>}
+      {successMsg && <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">{successMsg}</div>}
+      {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{error}</div>}
 
       {/* Category summary cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
@@ -249,12 +249,12 @@ export default function SustainabilityPage() {
           placeholder="Search…"
           value={search}
           onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-          className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-[180px]"
+          className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 flex-1 min-w-[180px]"
         />
         <select
           value={filterCategory}
           onChange={(e) => { setFilterCategory(e.target.value); setPage(1) }}
-          className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">All Categories</option>
           {SUSTAINABILITY_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -363,7 +363,7 @@ export default function SustainabilityPage() {
 
                   {form.indicator_value !== '' && form.unit && (
                     <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 border border-blue-100 text-sm text-blue-700">
-                      <span className="text-base">📊</span>
+                    <span className="text-base"></span>
                       <span>Recorded as: <strong>{form.indicator_value} {form.unit}</strong></span>
                     </div>
                   )}

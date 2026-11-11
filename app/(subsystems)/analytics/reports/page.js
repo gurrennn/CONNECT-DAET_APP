@@ -209,7 +209,7 @@ export default function ReportsPage() {
   }
 
   const inputClass = (field) =>
-    `px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+    `px-3 py-2.5 rounded-lg border text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
       formErrors[field] ? 'border-red-400 bg-red-50' : 'border-gray-300 bg-white'
     }`
 
@@ -218,8 +218,8 @@ export default function ReportsPage() {
       <Breadcrumbs items={[{ label: 'Dashboard', href: '/analytics' }, { label: 'Reports & Export' }]} />
       <AnalyticsHeader title="Reports & Export" subtitle="Generate and download tourism analytics reports" />
 
-      {successMsg && <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">✅ {successMsg}</div>}
-      {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">⚠️ {error}</div>}
+      {successMsg && <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">{successMsg}</div>}
+      {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{error}</div>}
 
       {/* Generator Form */}
       <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm mb-6">
@@ -275,7 +275,7 @@ export default function ReportsPage() {
                 className="w-full px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition min-h-[44px] disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 {generating && <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />}
-                {generating ? 'Generating…' : '📄 Generate & Download'}
+                {generating ? 'Generating…' : 'Generate & Download'}
               </button>
             </div>
           </div>

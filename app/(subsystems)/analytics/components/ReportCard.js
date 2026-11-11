@@ -12,7 +12,6 @@ export default function ReportCard({ report, onDownload }) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
       <div className="flex items-start gap-3 min-w-0">
-        <div className="text-2xl flex-shrink-0">📄</div>
         <div className="min-w-0">
           <h3 className="font-semibold text-gray-900 truncate">{report.title}</h3>
           <p className="text-xs text-gray-500 mt-0.5">

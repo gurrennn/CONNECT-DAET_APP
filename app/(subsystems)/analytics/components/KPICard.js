@@ -1,4 +1,4 @@
-export default function KPICard({ title, value, subtitle, icon, colorClass = 'from-blue-500 to-blue-600', change, changeLabel }) {
+export default function KPICard({ title, value, subtitle, colorClass = 'from-blue-500 to-blue-600', change, changeLabel }) {
   const isPositive = change > 0
   const isNeutral = change === null || change === undefined
 
@@ -10,11 +10,6 @@ export default function KPICard({ title, value, subtitle, icon, colorClass = 'fr
           <p className="text-2xl font-bold leading-tight truncate">{value}</p>
           {subtitle && <p className="text-xs text-white/70 mt-1 truncate">{subtitle}</p>}
         </div>
-        {icon && (
-          <div className="text-3xl ml-3 flex-shrink-0 opacity-80">
-            {icon}
-          </div>
-        )}
       </div>
       {!isNeutral && (
         <div className="mt-3 flex items-center gap-1 text-xs text-white/90">

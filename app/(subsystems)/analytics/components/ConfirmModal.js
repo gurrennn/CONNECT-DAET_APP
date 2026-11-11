@@ -54,12 +54,12 @@ export default function ConfirmModal({
   }
 
   const iconStyles = {
-    danger:  { icon: '🗑️', bg: 'bg-red-100' },
-    warning: { icon: '⚠️', bg: 'bg-amber-100' },
-    info:    { icon: 'ℹ️', bg: 'bg-blue-100' },
+    danger:  { bg: 'bg-red-100', label: '!' },
+    warning: { bg: 'bg-amber-100', label: '!' },
+    info:    { bg: 'bg-blue-100', label: 'i' },
   }
 
-  const { icon, bg } = iconStyles[variant] || iconStyles.danger
+  const { bg, label } = iconStyles[variant] || iconStyles.danger
 
   return (
     <div
@@ -74,8 +74,8 @@ export default function ConfirmModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* Icon */}
-        <div className={`w-12 h-12 rounded-full ${bg} flex items-center justify-center text-2xl mx-auto mb-4`}>
-          {icon}
+        <div className={`w-12 h-12 rounded-full ${bg} flex items-center justify-center text-lg font-bold text-gray-700 mx-auto mb-4`}>
+          {label}
         </div>
 
         {/* Content */}

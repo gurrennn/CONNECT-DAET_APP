@@ -77,7 +77,7 @@ export default function Navigation({ currentPath }: NavigationProps) {
       }
 
       setIsMenuOpen(false)
-      router.replace('/')
+      router.replace('/auth')
     } catch (error) {
       setAuthError(error instanceof Error ? error.message : 'Unable to sign out.')
     } finally {

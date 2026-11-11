@@ -88,12 +88,11 @@ export default function AnalyticsLoginPage() {
 
           <div className="mt-8 space-y-3">
             {[
-              { icon: '📈', text: 'Real-time visitor statistics' },
-              { icon: '🌿', text: 'Sustainability monitoring' },
-              { icon: '💰', text: 'Economic impact tracking' },
-            ].map(({ icon, text }) => (
+              { text: 'Real-time visitor statistics' },
+              { text: 'Sustainability monitoring' },
+              { text: 'Economic impact tracking' },
+            ].map(({ text }) => (
               <div key={text} className="flex items-center gap-3 text-left bg-white/10 rounded-xl px-4 py-3">
-                <span className="text-lg">{icon}</span>
                 <span className="text-sm text-blue-50">{text}</span>
               </div>
             ))}
@@ -133,7 +132,6 @@ export default function AnalyticsLoginPage() {
             {/* Error */}
             {error && (
               <div className="mb-5 flex gap-2.5 p-3.5 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-                <span className="shrink-0 mt-0.5">⚠️</span>
                 <span>{error}</span>
               </div>
             )}
@@ -225,8 +223,8 @@ export default function AnalyticsLoginPage() {
             <p className="text-xs text-gray-400 text-center">
               Restricted to authorized Municipal Tourism Office administrators.
             </p>
-            <a href="/" className="text-xs text-blue-500 hover:text-blue-700 transition">
-              ← Back to CONNECT-DAET.ph
+            <a href="/auth" className="text-xs text-blue-500 hover:text-blue-700 transition">
+              Back to Sign In
             </a>
           </div>
         </div>

@@ -34,7 +34,7 @@ export default function AnalyticsLayout({ children }) {
         }
 
         if (!isAdminUser(u)) {
-          router.replace('/')
+          router.replace('/auth')
           return
         }
 
@@ -67,7 +67,7 @@ export default function AnalyticsLayout({ children }) {
       if (!active) return
       const u = session?.user ?? null
       if (!u) { router.replace('/auth'); return }
-      if (!isAdminUser(u)) { router.replace('/'); return }
+      if (!isAdminUser(u)) { router.replace('/auth'); return }
     })
 
     return () => { active = false; subscription.unsubscribe() }
@@ -82,7 +82,7 @@ export default function AnalyticsLayout({ children }) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="bg-white rounded-2xl shadow-md p-8 max-w-sm w-full text-center">
-          <div className="text-4xl mb-3">⚠️</div>
+          <div className="text-4xl mb-3 text-red-500 font-bold">!</div>
           <h2 className="text-lg font-semibold text-gray-900 mb-2">Access Error</h2>
           <p className="text-sm text-red-600 mb-4">{authError}</p>
           <button onClick={() => router.push('/auth')} className="px-4 py-2.5 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">

@@ -75,7 +75,6 @@ export default function DataTable({
         <tr>
           <td colSpan={columns.length} className="px-4 py-12 text-center">
             <div className="flex flex-col items-center gap-2 text-gray-400">
-              <span className="text-3xl">📭</span>
               <span className="text-sm">{emptyMessage}</span>
             </div>
           </td>
@@ -87,7 +86,7 @@ export default function DataTable({
     return data.map((row, rowIdx) => (
       <tr key={row.id || rowIdx} className="hover:bg-gray-50 transition-colors">
         {columns.map((col) => (
-          <td key={col.key} className={`px-4 py-3 text-gray-700 ${col.className || ''}`}>
+          <td key={col.key} className={`px-4 py-3 text-gray-900 ${col.className || ''}`}>
             {col.render ? col.render(row[col.key], row) : (row[col.key] ?? '—')}
           </td>
         ))}

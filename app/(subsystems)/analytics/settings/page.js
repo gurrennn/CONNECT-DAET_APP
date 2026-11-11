@@ -61,8 +61,8 @@ export default function SettingsPage() {
     <div>
       <AnalyticsHeader title="Settings" subtitle="System configuration and administrator preferences" />
 
-      {successMsg && <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">✅ {successMsg}</div>}
-      {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">⚠️ {error}</div>}
+      {successMsg && <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">{successMsg}</div>}
+      {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{error}</div>}
 
       {/* Tabs */}
       <div className="flex gap-2 mb-5 border-b border-gray-200 overflow-x-auto">

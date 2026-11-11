@@ -35,7 +35,7 @@ function generateRuleBasedInsights(kpis, monthlyArrivals, monthlyRevenue) {
       type: 'info',
       title: 'Insufficient Data',
       body: 'No tourism statistics have been recorded yet. Add data in Tourism Statistics to generate insights.',
-      icon: 'ℹ️',
+      icon: 'info',
     }]
   }
 
@@ -50,7 +50,7 @@ function generateRuleBasedInsights(kpis, monthlyArrivals, monthlyRevenue) {
         type: 'positive',
         title: `Strong Arrival Growth in ${last.month}`,
         body: `Tourist arrivals increased by ${change.toFixed(1)}% compared to the previous month (${prev.total.toLocaleString()} → ${last.total.toLocaleString()}). This indicates positive momentum in Daet's tourism sector.`,
-        icon: '📈',
+        icon: 'up',
         recommendation: 'Consider increasing staffing and facilities at high-traffic destinations to maintain service quality.',
       })
     } else if (change < -15) {
@@ -58,7 +58,7 @@ function generateRuleBasedInsights(kpis, monthlyArrivals, monthlyRevenue) {
         type: 'warning',
         title: `Decline in Arrivals — ${last.month}`,
         body: `Tourist arrivals dropped by ${Math.abs(change).toFixed(1)}% from ${prev.total.toLocaleString()} to ${last.total.toLocaleString()}. This warrants attention and investigation.`,
-        icon: '📉',
+        icon: 'down',
         recommendation: 'Review marketing campaigns, accessibility, and any events that may have deterred visitors this period.',
       })
     } else {
@@ -66,7 +66,7 @@ function generateRuleBasedInsights(kpis, monthlyArrivals, monthlyRevenue) {
         type: 'neutral',
         title: 'Stable Arrival Trend',
         body: `Tourist arrivals are relatively stable (${change >= 0 ? '+' : ''}${change.toFixed(1)}% vs prior month). Total arrivals for the latest month: ${last.total.toLocaleString()}.`,
-        icon: '→',
+        icon: 'stable',
       })
     }
   }
@@ -79,7 +79,7 @@ function generateRuleBasedInsights(kpis, monthlyArrivals, monthlyRevenue) {
         type: 'positive',
         title: 'Strong International Visitor Interest',
         body: `Foreign tourists represent ${foreignRatio.toFixed(1)}% of total arrivals (${kpis.foreignArrivals.toLocaleString()} visitors). This is a healthy international market share.`,
-        icon: '✈️',
+        icon: 'intl',
         recommendation: 'Develop multilingual tourism materials and enhance international marketing through DOT partnerships.',
       })
     } else if (foreignRatio < 5 && kpis.totalArrivals > 50) {
@@ -87,7 +87,7 @@ function generateRuleBasedInsights(kpis, monthlyArrivals, monthlyRevenue) {
         type: 'info',
         title: 'Primarily Domestic Tourism',
         body: `${foreignRatio.toFixed(1)}% of visitors are foreign tourists. The market is predominantly domestic. This is normal for many LGUs.`,
-        icon: '🏠',
+        icon: 'domestic',
         recommendation: 'Focus on domestic tourism campaigns while exploring opportunities to attract regional international visitors.',
       })
     }
@@ -105,7 +105,7 @@ function generateRuleBasedInsights(kpis, monthlyArrivals, monthlyRevenue) {
         type: 'positive',
         title: `Above-Average Revenue — ${lastRev.month}`,
         body: `Estimated tourism revenue in ${lastRev.month} (${formatPeso(lastRev.revenue, { compact: true })}) is 20%+ above the ${revenueData.length}-month average (${formatPeso(avgRev, { compact: true })}).`,
-        icon: '💰',
+        icon: 'revenue',
         recommendation: 'Identify which activities or events drove this increase and replicate the approach.',
       })
     } else if (lastRev.revenue < avgRev * 0.7 && revenueData.length >= 3) {
@@ -113,7 +113,7 @@ function generateRuleBasedInsights(kpis, monthlyArrivals, monthlyRevenue) {
         type: 'warning',
         title: `Below-Average Revenue — ${lastRev.month}`,
         body: `Estimated revenue of ${formatPeso(lastRev.revenue, { compact: true })} is notably below the average of ${formatPeso(avgRev, { compact: true })}.`,
-        icon: '⚠️',
+        icon: 'warn',
         recommendation: 'Review if off-peak promotions or special packages could help sustain economic activity during low seasons.',
       })
     }
@@ -130,7 +130,7 @@ function generateRuleBasedInsights(kpis, monthlyArrivals, monthlyRevenue) {
         type: 'forecast',
         title: 'Arrival Forecast (Next Period)',
         body: `Based on the 3-month rolling average (${Math.round(avg).toLocaleString()} arrivals/month), the projected arrivals for the next period is approximately ${forecast.toLocaleString()}.`,
-        icon: '🔮',
+        icon: 'forecast',
         disclaimer: 'This is a simple trend-based estimate, not an AI prediction. Actual values may vary.',
       })
     }
@@ -141,7 +141,7 @@ function generateRuleBasedInsights(kpis, monthlyArrivals, monthlyRevenue) {
     type: 'recommendation',
     title: 'General Tourism Development Recommendation',
     body: 'Based on current records, the Municipal Tourism Office should focus on consistent data collection to improve forecasting accuracy. Regular reporting and quarterly reviews help identify patterns earlier.',
-    icon: '💡',
+    icon: 'tip',
     recommendation: 'Schedule monthly data input sessions and quarterly insight reviews with tourism stakeholders.',
   })
 
@@ -262,7 +262,7 @@ export default function InsightsPage() {
             <select
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="px-3 py-2 rounded-lg border border-gray-300 text-sm bg-white"
+              className="px-3 py-2 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white"
             >
               {years.map(y => <option key={y} value={y}>{y}</option>)}
             </select>
@@ -277,22 +277,21 @@ export default function InsightsPage() {
         }
       />
 
-      {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">⚠️ {error}</div>}
-      {savedMsg && <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">✅ {savedMsg}</div>}
+      {error && <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{error}</div>}
+      {savedMsg && <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">{savedMsg}</div>}
 
       <div className="space-y-6">
         {/* Summary Stats */}
         {kpis && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
-              { label: 'Total Arrivals (YTD)', value: formatNumber(kpis.totalArrivals), icon: '🧳' },
-              { label: 'Estimated Revenue (YTD)', value: formatPeso(kpis.estimatedRevenue, { compact: true }), icon: '💰' },
-              { label: 'Growth Rate', value: kpis.growthRate != null ? formatPercent(kpis.growthRate) : '—', icon: '📈' },
-              { label: 'Statistics Records', value: formatNumber(kpis.statisticsRecords), icon: '📋' },
+              { label: 'Total Arrivals (YTD)', value: formatNumber(kpis.totalArrivals) },
+              { label: 'Estimated Revenue (YTD)', value: formatPeso(kpis.estimatedRevenue, { compact: true }) },
+              { label: 'Growth Rate', value: kpis.growthRate != null ? formatPercent(kpis.growthRate) : '—' },
+              { label: 'Statistics Records', value: formatNumber(kpis.statisticsRecords) },
             ].map(stat => (
               <div key={stat.label} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xl">{stat.icon}</span>
+                <div className="mb-1">
                   <span className="text-xs text-gray-500">{stat.label}</span>
                 </div>
                 <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
@@ -336,17 +335,16 @@ export default function InsightsPage() {
             {ruleInsights.map((insight, idx) => (
               <div key={idx} className={`rounded-xl border p-4 ${INSIGHT_COLORS[insight.type] || INSIGHT_COLORS.info}`}>
                 <div className="flex items-start gap-3">
-                  <span className="text-2xl flex-shrink-0">{insight.icon}</span>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-semibold text-sm mb-1">{insight.title}</h3>
                     <p className="text-sm opacity-90">{insight.body}</p>
                     {insight.recommendation && (
                       <p className="text-xs mt-2 opacity-80 italic">
-                        💡 <strong>Recommendation:</strong> {insight.recommendation}
+                        <strong>Recommendation:</strong> {insight.recommendation}
                       </p>
                     )}
                     {insight.disclaimer && (
-                      <p className="text-xs mt-2 opacity-70 italic">⚠️ {insight.disclaimer}</p>
+                      <p className="text-xs mt-2 opacity-70 italic">Note: {insight.disclaimer}</p>
                     )}
                   </div>
                 </div>
@@ -367,7 +365,7 @@ export default function InsightsPage() {
 
           {aiError && (
             <div className="mb-3 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-              ⚠️ {aiError}
+              {aiError}
               {aiError.includes('API') && (
                 <span className="block mt-1 text-xs text-red-500">
                   If the API is unavailable, use the Rule-Based Insights above for analysis.
@@ -388,7 +386,7 @@ export default function InsightsPage() {
             className="px-5 py-2.5 rounded-lg bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition min-h-[44px] disabled:opacity-60 flex items-center gap-2"
           >
             {aiLoading && <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />}
-            {aiLoading ? 'Generating AI Report…' : '🤖 Generate AI Tourism Insight'}
+            {aiLoading ? 'Generating AI Report…' : 'Generate AI Tourism Insight'}
           </button>
           <p className="text-xs text-gray-400 mt-2">
             AI-generated content is for guidance only. Always verify recommendations with actual tourism data.

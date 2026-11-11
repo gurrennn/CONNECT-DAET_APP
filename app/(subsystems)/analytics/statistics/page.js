@@ -171,16 +171,16 @@ export default function StatisticsPage() {
       <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-5 shadow-sm">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <input type="text" placeholder="Search records…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-            className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" />
           <select value={filterDest} onChange={(e) => { setFilterDest(e.target.value); setPage(1) }}
             className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option value="">All Destinations</option>
             {DESTINATIONS.map(d => <option key={d} value={d}>{d}</option>)}
           </select>
           <input type="date" value={filterFrom} onChange={(e) => { setFilterFrom(e.target.value); setPage(1) }}
-            className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" title="Date from" />
+            className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" title="Date from" />
           <input type="date" value={filterTo} onChange={(e) => { setFilterTo(e.target.value); setPage(1) }}
-            className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" title="Date to" />
+            className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500" title="Date to" />
         </div>
         {(search || filterDest || filterFrom || filterTo) && (
           <button onClick={() => { setSearch(''); setFilterDest(''); setFilterFrom(''); setFilterTo(''); setPage(1) }}
