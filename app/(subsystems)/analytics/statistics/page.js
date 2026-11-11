@@ -173,7 +173,7 @@ export default function StatisticsPage() {
           <input type="text" placeholder="Search records…" value={search} onChange={(e) => { setSearch(e.target.value); setPage(1) }}
             className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500" />
           <select value={filterDest} onChange={(e) => { setFilterDest(e.target.value); setPage(1) }}
-            className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+            className="px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
             <option value="">All Destinations</option>
             {DESTINATIONS.map(d => <option key={d} value={d}>{d}</option>)}
           </select>
@@ -206,9 +206,8 @@ export default function StatisticsPage() {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={closeModal}>
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
               <div>
-                {/* Breadcrumb inside modal */}
                 <p className="text-xs text-gray-400 mb-0.5">
                   Dashboard › Tourism Statistics › {editRecord ? 'Edit Record' : 'Add Record'}
                 </p>
@@ -216,9 +215,9 @@ export default function StatisticsPage() {
                   {editRecord ? 'Edit Statistics Record' : 'Add Statistics Record'}
                 </h2>
               </div>
-              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-xl min-h-[44px] min-w-[44px] flex items-center justify-center">✕</button>
+              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-xl min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 transition">✕</button>
             </div>
-            <div className="p-5">
+            <div className="px-6 py-5">
               <StatisticsForm
                 initialData={editRecord}
                 onSubmit={handleSubmit}

@@ -1,20 +1,48 @@
 'use client'
 
 import {
-  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, DoughnutChart,
+  LineChart, Line, BarChart, Bar, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
 } from 'recharts'
 import { CHART_COLORS, PIE_COLORS } from '../lib/analyticsConstants'
 import { formatPeso } from '../lib/analyticsHelpers'
 
+// ─────────────────────────────────────────────────────────────
+// ChartCard — shared wrapper
+// Wraps every chart in a card that shows a "?" explain button.
+// The explain button (and only the button) triggers onExplain.
+// The rest of the card is NOT clickable so Recharts tooltips/
+// hover interactions are fully preserved.
+// ─────────────────────────────────────────────────────────────
+function ChartCard({ title, children, onExplain }) {
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm relative">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-base font-semibold text-gray-800">{title}</h3>
+        {onExplain && (
+          <button
+            onClick={onExplain}
+            className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-medium transition group"
+            title="Click to understand this chart"
+            aria-label={`Explain ${title}`}
+          >
+            <span className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold leading-none group-hover:bg-blue-700 transition">?</span>
+            Explain
+          </button>
+        )}
+      </div>
+      {children}
+    </div>
+  )
+}
+
 // ─── Monthly Arrivals Line / Bar Chart ──────────────────────
 
-export function MonthlyArrivalsChart({ data = [], chartType = 'line' }) {
+export function MonthlyArrivalsChart({ data = [], chartType = 'line', onExplain }) {
   const Chart = chartType === 'bar' ? BarChart : LineChart
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-      <h3 className="text-base font-semibold text-gray-800 mb-4">Monthly Tourist Arrivals</h3>
+    <ChartCard title="Monthly Tourist Arrivals" onExplain={onExplain}>
       <ResponsiveContainer width="100%" height={280}>
         <Chart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -38,35 +66,32 @@ export function MonthlyArrivalsChart({ data = [], chartType = 'line' }) {
           )}
         </Chart>
       </ResponsiveContainer>
-    </div>
+    </ChartCard>
   )
 }
 
 // ─── Yearly Growth Bar Chart ─────────────────────────────────
 
-export function YearlyGrowthChart({ data = [] }) {
+export function YearlyGrowthChart({ data = [], onExplain }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-      <h3 className="text-base font-semibold text-gray-800 mb-4">Yearly Tourism Growth</h3>
+    <ChartCard title="Yearly Tourism Growth" onExplain={onExplain}>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
           <XAxis dataKey="year" tick={{ fontSize: 12 }} />
           <YAxis tick={{ fontSize: 12 }} />
-          <Tooltip
-            formatter={(val) => [Number(val).toLocaleString(), 'Arrivals']}
-          />
+          <Tooltip formatter={(val) => [Number(val).toLocaleString(), 'Arrivals']} />
           <Legend />
           <Bar dataKey="total" name="Total Arrivals" fill={CHART_COLORS.primary} radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
-    </div>
+    </ChartCard>
   )
 }
 
 // ─── Local vs Foreign Pie Chart ──────────────────────────────
 
-export function LocalForeignPieChart({ localCount = 0, foreignCount = 0 }) {
+export function LocalForeignPieChart({ localCount = 0, foreignCount = 0, onExplain }) {
   const total = localCount + foreignCount
   const pieData = [
     { name: 'Local Tourists', value: localCount },
@@ -74,8 +99,7 @@ export function LocalForeignPieChart({ localCount = 0, foreignCount = 0 }) {
   ]
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-      <h3 className="text-base font-semibold text-gray-800 mb-4">Local vs. Foreign Visitors</h3>
+    <ChartCard title="Local vs. Foreign Visitors" onExplain={onExplain}>
       {total === 0 ? (
         <div className="h-[280px] flex items-center justify-center text-gray-400 text-sm">
           No arrival data recorded yet.
@@ -101,16 +125,15 @@ export function LocalForeignPieChart({ localCount = 0, foreignCount = 0 }) {
           </PieChart>
         </ResponsiveContainer>
       )}
-    </div>
+    </ChartCard>
   )
 }
 
 // ─── Revenue Trend Line Chart ────────────────────────────────
 
-export function RevenueTrendChart({ data = [] }) {
+export function RevenueTrendChart({ data = [], onExplain }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-      <h3 className="text-base font-semibold text-gray-800 mb-4">Estimated Tourism Revenue Trend</h3>
+    <ChartCard title="Estimated Tourism Revenue Trend" onExplain={onExplain}>
       <ResponsiveContainer width="100%" height={280}>
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -131,16 +154,15 @@ export function RevenueTrendChart({ data = [] }) {
           />
         </LineChart>
       </ResponsiveContainer>
-    </div>
+    </ChartCard>
   )
 }
 
 // ─── Destination Bar Chart ───────────────────────────────────
 
-export function DestinationChart({ data = [] }) {
+export function DestinationChart({ data = [], onExplain }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-      <h3 className="text-base font-semibold text-gray-800 mb-4">Visitors by Destination</h3>
+    <ChartCard title="Visitors by Destination" onExplain={onExplain}>
       {data.length === 0 ? (
         <div className="h-[280px] flex items-center justify-center text-gray-400 text-sm">
           No destination data available.
@@ -156,16 +178,15 @@ export function DestinationChart({ data = [] }) {
           </BarChart>
         </ResponsiveContainer>
       )}
-    </div>
+    </ChartCard>
   )
 }
 
 // ─── Sustainability Radar / Bar ───────────────────────────────
 
-export function SustainabilityBarChart({ data = [] }) {
+export function SustainabilityBarChart({ data = [], onExplain }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-      <h3 className="text-base font-semibold text-gray-800 mb-4">Sustainability Indicators</h3>
+    <ChartCard title="Sustainability Indicators" onExplain={onExplain}>
       {data.length === 0 ? (
         <div className="h-[280px] flex items-center justify-center text-gray-400 text-sm">
           No sustainability records yet.
@@ -181,16 +202,15 @@ export function SustainabilityBarChart({ data = [] }) {
           </BarChart>
         </ResponsiveContainer>
       )}
-    </div>
+    </ChartCard>
   )
 }
 
 // ─── Generic Simple Bar Chart ─────────────────────────────────
 
-export function SimpleBarChart({ data = [], xKey = 'name', yKey = 'value', title, color, yFormatter }) {
+export function SimpleBarChart({ data = [], xKey = 'name', yKey = 'value', title, color, yFormatter, onExplain }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm">
-      {title && <h3 className="text-base font-semibold text-gray-800 mb-4">{title}</h3>}
+    <ChartCard title={title || 'Chart'} onExplain={onExplain}>
       <ResponsiveContainer width="100%" height={280}>
         <BarChart data={data}>
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -200,6 +220,9 @@ export function SimpleBarChart({ data = [], xKey = 'name', yKey = 'value', title
           <Bar dataKey={yKey} fill={color || CHART_COLORS.primary} radius={[4, 4, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
-    </div>
+    </ChartCard>
   )
 }
+
+// ─── Revenue Trend (alias used in economic-impact page) ──────
+export { RevenueTrendChart as default }

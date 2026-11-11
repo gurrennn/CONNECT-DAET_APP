@@ -5,6 +5,7 @@ import AnalyticsHeader from '../components/AnalyticsHeader'
 import AnalyticsLoading from '../components/AnalyticsLoading'
 import Breadcrumbs from '../components/Breadcrumbs'
 import { ToastContainer, useToast } from '../components/Toast'
+import ChartExplainModal from '../components/ChartExplainModal'
 import {
   MonthlyArrivalsChart,
   YearlyGrowthChart,
@@ -170,6 +171,11 @@ export default function InsightsPage() {
   const [savedMsg, setSavedMsg] = useState(null)
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
 
+  // Chart explain modal
+  const [explainModal, setExplainModal] = useState({ open: false, chartType: '', data: null, extra: null })
+  const openExplain = (chartType, data, extra) => setExplainModal({ open: true, chartType, data, extra })
+  const closeExplain = () => setExplainModal(prev => ({ ...prev, open: false }))
+
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i)
 
   const loadData = useCallback(async (year) => {
@@ -299,13 +305,24 @@ export default function InsightsPage() {
         <section>
           <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Tourism Trend Visualizations — {selectedYear}</h2>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <MonthlyArrivalsChart data={monthlyArrivals} chartType="line" />
+            <MonthlyArrivalsChart
+              data={monthlyArrivals}
+              chartType="line"
+              onExplain={() => openExplain('monthly_arrivals', monthlyArrivals)}
+            />
             <LocalForeignPieChart
               localCount={kpis?.localArrivals || 0}
               foreignCount={kpis?.foreignArrivals || 0}
+              onExplain={() => openExplain('local_foreign', null, { localCount: kpis?.localArrivals || 0, foreignCount: kpis?.foreignArrivals || 0 })}
             />
-            <RevenueTrendChart data={monthlyRevenue} />
-            <YearlyGrowthChart data={yearlyArrivals} />
+            <RevenueTrendChart
+              data={monthlyRevenue}
+              onExplain={() => openExplain('revenue_trend', monthlyRevenue)}
+            />
+            <YearlyGrowthChart
+              data={yearlyArrivals}
+              onExplain={() => openExplain('yearly_growth', yearlyArrivals)}
+            />
           </div>
         </section>
 
@@ -378,6 +395,15 @@ export default function InsightsPage() {
           </p>
         </section>
       </div>
+
+      {/* Chart Explanation Modal */}
+      <ChartExplainModal
+        open={explainModal.open}
+        onClose={closeExplain}
+        chartType={explainModal.chartType}
+        data={explainModal.data}
+        extra={explainModal.extra}
+      />
     </div>
   )
 }

@@ -7,6 +7,7 @@ import AnalyticsLoading from '../components/AnalyticsLoading'
 import Breadcrumbs from '../components/Breadcrumbs'
 import ConfirmModal from '../components/ConfirmModal'
 import { ToastContainer, useToast } from '../components/Toast'
+import ChartExplainModal from '../components/ChartExplainModal'
 import { SustainabilityBarChart } from '../components/TourismChart'
 import {
   getSustainabilityRecords,
@@ -169,8 +170,13 @@ export default function SustainabilityPage() {
   const openAdd = () => { setEditRecord(null); setForm(EMPTY_FORM); setFormErrors({}); setShowModal(true) }
   const closeModal = () => { setShowModal(false); setEditRecord(null); setFormErrors({}); setError(null) }
 
+  // Chart explain
+  const [explainModal, setExplainModal] = useState({ open: false, chartType: '', data: null })
+  const openExplain = (chartType, data) => setExplainModal({ open: true, chartType, data })
+  const closeExplain = () => setExplainModal(prev => ({ ...prev, open: false }))
+
   const inputClass = (field) =>
-    `w-full px-3 py-2.5 rounded-lg border text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+    `w-full px-3 py-2.5 rounded-lg border text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
       formErrors[field] ? 'border-red-400 bg-red-50' : 'border-gray-300'
     }`
 
@@ -229,7 +235,10 @@ export default function SustainabilityPage() {
       {/* Chart */}
       {chartData.length > 0 && (
         <div className="mb-5">
-          <SustainabilityBarChart data={chartData} />
+          <SustainabilityBarChart
+            data={chartData}
+            onExplain={() => openExplain('sustainability', chartData)}
+          />
         </div>
       )}
 
@@ -267,75 +276,118 @@ export default function SustainabilityPage() {
       {/* Modal */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={closeModal}>
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <h2 className="text-lg font-semibold text-gray-900">{editRecord ? 'Edit Sustainability Record' : 'Add Sustainability Record'}</h2>
-              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-xl min-h-[44px] min-w-[44px] flex items-center justify-center">✕</button>
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            {/* Modal Header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+              <div>
+                <p className="text-xs text-gray-400 mb-0.5">Dashboard › Sustainability › {editRecord ? 'Edit Record' : 'Add Record'}</p>
+                <h2 className="text-lg font-semibold text-gray-900">{editRecord ? 'Edit Sustainability Record' : 'Add Sustainability Record'}</h2>
+              </div>
+              <button onClick={closeModal} className="text-gray-400 hover:text-gray-600 text-xl min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg hover:bg-gray-100 transition">✕</button>
             </div>
-            <form onSubmit={handleSubmit} className="p-5 space-y-4">
+
+            <form onSubmit={handleSubmit} className="px-6 py-5 space-y-5">
               {error && <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">{error}</div>}
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Record Date <span className="text-red-500">*</span></label>
-                  <input type="date" name="record_date" value={form.record_date} onChange={handleChange} className={inputClass('record_date')} max={new Date().toISOString().split('T')[0]} />
-                  {formErrors.record_date && <p className="text-red-500 text-xs mt-1">{formErrors.record_date}</p>}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Category <span className="text-red-500">*</span></label>
-                  <select name="category" value={form.category} onChange={handleCategoryChange} className={inputClass('category')}>
-                    <option value="">Select category...</option>
-                    {SUSTAINABILITY_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                  {formErrors.category && <p className="text-red-500 text-xs mt-1">{formErrors.category}</p>}
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Indicator Name <span className="text-red-500">*</span></label>
-                  {availableIndicators.length > 0 ? (
-                    <select name="indicator_name" value={form.indicator_name} onChange={handleChange} className={inputClass('indicator_name')}>
-                      <option value="">Select indicator...</option>
-                      {availableIndicators.map(i => <option key={i} value={i}>{i}</option>)}
-                      <option value="__custom">Other (custom)</option>
+              {/* ── Section 1: Basic Info ── */}
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Basic Information</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Record Date <span className="text-red-500">*</span></label>
+                    <input type="date" name="record_date" value={form.record_date} onChange={handleChange} className={inputClass('record_date')} max={new Date().toISOString().split('T')[0]} />
+                    {formErrors.record_date && <p className="text-red-500 text-xs mt-1">{formErrors.record_date}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Category <span className="text-red-500">*</span></label>
+                    <select name="category" value={form.category} onChange={handleCategoryChange} className={inputClass('category')}>
+                      <option value="">Select category...</option>
+                      {SUSTAINABILITY_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
                     </select>
-                  ) : (
-                    <input type="text" name="indicator_name" value={form.indicator_name} onChange={handleChange} placeholder="Enter indicator name..." className={inputClass('indicator_name')} />
+                    {formErrors.category && <p className="text-red-500 text-xs mt-1">{formErrors.category}</p>}
+                  </div>
+                  <div className="sm:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Destination <span className="text-gray-400 font-normal">(optional)</span></label>
+                    <select name="destination" value={form.destination} onChange={handleChange} className={inputClass('destination')}>
+                      <option value="">All / General</option>
+                      {DESTINATIONS.map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t border-gray-100" />
+
+              {/* ── Section 2: Indicator ── */}
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Indicator Details</p>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Indicator Name <span className="text-red-500">*</span></label>
+                    {availableIndicators.length > 0 ? (
+                      <select name="indicator_name" value={form.indicator_name} onChange={handleChange} className={inputClass('indicator_name')}>
+                        <option value="">Select indicator...</option>
+                        {availableIndicators.map(i => <option key={i} value={i}>{i}</option>)}
+                        <option value="__custom">Other (custom)</option>
+                      </select>
+                    ) : (
+                      <input type="text" name="indicator_name" value={form.indicator_name} onChange={handleChange} placeholder={form.category ? 'Enter indicator name...' : 'Select a category first'} disabled={!form.category} className={inputClass('indicator_name')} />
+                    )}
+                    {form.indicator_name === '__custom' && (
+                      <input
+                        type="text"
+                        name="indicator_name"
+                        value=""
+                        onChange={(e) => setForm(prev => ({ ...prev, indicator_name: e.target.value }))}
+                        placeholder="Enter custom indicator name..."
+                        className={`${inputClass('indicator_name')} mt-2`}
+                      />
+                    )}
+                    {formErrors.indicator_name && <p className="text-red-500 text-xs mt-1">{formErrors.indicator_name}</p>}
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Value</label>
+                      <input type="number" name="indicator_value" value={form.indicator_value} onChange={handleChange} step="any" placeholder="e.g. 75" className={inputClass('indicator_value')} />
+                      {formErrors.indicator_value && <p className="text-red-500 text-xs mt-1">{formErrors.indicator_value}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
+                      <select name="unit" value={form.unit} onChange={handleChange} className={inputClass('unit')}>
+                        <option value="">Select unit...</option>
+                        {UNIT_SUGGESTIONS.map(u => <option key={u} value={u}>{u}</option>)}
+                      </select>
+                    </div>
+                  </div>
+
+                  {form.indicator_value !== '' && form.unit && (
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-50 border border-blue-100 text-sm text-blue-700">
+                      <span className="text-base">📊</span>
+                      <span>Recorded as: <strong>{form.indicator_value} {form.unit}</strong></span>
+                    </div>
                   )}
-                  {form.indicator_name === '__custom' && (
-                    <input type="text" name="indicator_name" value="" onChange={(e) => setForm(prev => ({ ...prev, indicator_name: e.target.value }))} placeholder="Custom indicator name..." className={`${inputClass('indicator_name')} mt-2`} />
-                  )}
-                  {formErrors.indicator_name && <p className="text-red-500 text-xs mt-1">{formErrors.indicator_name}</p>}
                 </div>
+              </div>
+
+              <div className="border-t border-gray-100" />
+
+              {/* ── Section 3: Notes ── */}
+              <div>
+                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Notes</p>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Value</label>
-                  <input type="number" name="indicator_value" value={form.indicator_value} onChange={handleChange} step="any" placeholder="e.g. 75" className={inputClass('indicator_value')} />
-                  {formErrors.indicator_value && <p className="text-red-500 text-xs mt-1">{formErrors.indicator_value}</p>}
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Unit</label>
-                  <select name="unit" value={form.unit} onChange={handleChange} className={inputClass('unit')}>
-                    <option value="">Select unit...</option>
-                    {UNIT_SUGGESTIONS.map(u => <option key={u} value={u}>{u}</option>)}
-                  </select>
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Destination (optional)</label>
-                  <select name="destination" value={form.destination} onChange={handleChange} className={inputClass('destination')}>
-                    <option value="">All / General</option>
-                    {DESTINATIONS.map(d => <option key={d} value={d}>{d}</option>)}
-                  </select>
-                </div>
-                <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
-                  <textarea name="notes" value={form.notes} onChange={handleChange} rows={2} className={`${inputClass('notes')} resize-none`} placeholder="Optional notes..." />
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Notes <span className="text-gray-400 font-normal">(optional)</span></label>
+                  <textarea name="notes" value={form.notes} onChange={handleChange} rows={3} className={`${inputClass('notes')} resize-none`} placeholder="Add any context or methodology notes..." />
                   {formErrors.notes && <p className="text-red-500 text-xs mt-1">{formErrors.notes}</p>}
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-2">
+              {/* Actions */}
+              <div className="flex justify-end gap-3 pt-1 border-t border-gray-100">
                 <button type="button" onClick={closeModal} disabled={submitting} className="px-4 py-2.5 rounded-lg border border-gray-300 text-sm font-medium text-gray-700 hover:bg-gray-50 transition min-h-[44px] disabled:opacity-50">Cancel</button>
                 <button type="submit" disabled={submitting} className="px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition min-h-[44px] disabled:opacity-60 flex items-center gap-2">
                   {submitting && <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />}
-                  {editRecord ? 'Update' : 'Save'}
+                  {editRecord ? 'Update Record' : 'Save Record'}
                 </button>
               </div>
             </form>
@@ -352,6 +404,13 @@ export default function SustainabilityPage() {
         loading={confirmModal.loading}
         onConfirm={handleArchiveConfirmed}
         onCancel={() => setConfirmModal({ open: false, record: null, loading: false })}
+      />
+
+      <ChartExplainModal
+        open={explainModal.open}
+        onClose={closeExplain}
+        chartType={explainModal.chartType}
+        data={explainModal.data}
       />
 
       <ToastContainer toasts={toasts} onRemove={removeToast} />

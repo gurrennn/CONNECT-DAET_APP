@@ -567,3 +567,113 @@ export async function saveImportLog(log) {
   if (error) throw error
   return data
 }
+
+// ─── Destination Breakdown ────────────────────────────────────
+// Groups tourism statistics by destination for the chart.
+// Returns sorted array of { destination, total, local, foreign }.
+
+export async function getDestinationBreakdown(year = new Date().getFullYear()) {
+  const { data, error } = await supabase
+    .from('analytics_tourism_statistics')
+    .select('destination, local_tourist_count, foreign_tourist_count')
+    .gte('reporting_date', `${year}-01-01`)
+    .lte('reporting_date', `${year}-12-31`)
+    .eq('is_archived', false)
+
+  if (error) throw error
+
+  // Aggregate by destination client-side
+  const buckets = {}
+  ;(data || []).forEach(r => {
+    const dest = r.destination || 'Other'
+    if (!buckets[dest]) buckets[dest] = { destination: dest, local: 0, foreign: 0, total: 0 }
+    buckets[dest].local += Number(r.local_tourist_count) || 0
+    buckets[dest].foreign += Number(r.foreign_tourist_count) || 0
+    buckets[dest].total += (Number(r.local_tourist_count) || 0) + (Number(r.foreign_tourist_count) || 0)
+  })
+
+  return Object.values(buckets)
+    .filter(b => b.total > 0)
+    .sort((a, b) => b.total - a.total)  // highest first
+}
+
+// ─── Satisfaction Score (from ingest API events) ──────────────
+// Reads satisfaction_feedback events from analytics_import_logs
+// that were submitted by Subsystem 9 (Sentiment & Feedback).
+// Returns { avgScore, totalFeedback, positive, neutral, negative, trend }.
+// When Subsystem 9 is live and posting to /api/analytics/ingest,
+// this will return real data. Until then it uses the import logs
+// for any test pings they've sent.
+
+export async function getSatisfactionScore() {
+  try {
+    const { data, error } = await supabase
+      .from('analytics_import_logs')
+      .select('source_name, notes, imported_at, record_count')
+      .eq('source_name', 'subsystem_9_sentiment')
+      .eq('status', 'success')
+      .order('imported_at', { ascending: false })
+      .limit(100)
+
+    if (error) throw error
+
+    const logs = data || []
+
+    if (logs.length === 0) {
+      return { avgScore: null, totalFeedback: 0, positive: 0, neutral: 0, negative: 0, isLive: false }
+    }
+
+    // Parse value from notes field (format: "Value: 4.2 | ...")
+    const scores = logs
+      .map(log => {
+        const match = log.notes?.match(/Value:\s*([\d.]+)/)
+        return match ? parseFloat(match[1]) : null
+      })
+      .filter(v => v !== null && !isNaN(v) && v >= 1 && v <= 5)
+
+    if (scores.length === 0) {
+      return { avgScore: null, totalFeedback: logs.length, positive: 0, neutral: 0, negative: 0, isLive: true }
+    }
+
+    const avg = scores.reduce((s, v) => s + v, 0) / scores.length
+    const positive = scores.filter(v => v >= 4).length
+    const neutral = scores.filter(v => v >= 3 && v < 4).length
+    const negative = scores.filter(v => v < 3).length
+
+    // Simple trend: compare last 10 vs prior 10
+    const recent = scores.slice(0, Math.min(10, scores.length))
+    const prior = scores.slice(Math.min(10, scores.length), Math.min(20, scores.length))
+    const recentAvg = recent.reduce((s, v) => s + v, 0) / recent.length
+    const priorAvg = prior.length > 0 ? prior.reduce((s, v) => s + v, 0) / prior.length : recentAvg
+    const trend = recentAvg - priorAvg
+
+    return {
+      avgScore: parseFloat(avg.toFixed(2)),
+      totalFeedback: logs.length,
+      positive,
+      neutral,
+      negative,
+      trend: parseFloat(trend.toFixed(2)),
+      isLive: true,
+    }
+  } catch (err) {
+    console.warn('[TIA-DAS] getSatisfactionScore error:', err.message)
+    return { avgScore: null, totalFeedback: 0, positive: 0, neutral: 0, negative: 0, isLive: false }
+  }
+}
+
+// ─── Ingest Event Logs (for Integrations page) ────────────────
+// Returns recent cross-subsystem events received via /api/analytics/ingest.
+
+export async function getIngestEvents({ page = 1, pageSize = 20 } = {}) {
+  const from = (page - 1) * pageSize
+  const { data, error, count } = await supabase
+    .from('analytics_import_logs')
+    .select('*', { count: 'exact' })
+    .neq('source_name', 'CSV Import')       // exclude manual CSV uploads
+    .order('imported_at', { ascending: false })
+    .range(from, from + pageSize - 1)
+
+  if (error) throw error
+  return { data: data || [], total: count || 0, page, pageSize }
+}
