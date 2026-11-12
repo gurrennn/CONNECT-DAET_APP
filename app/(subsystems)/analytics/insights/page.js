@@ -149,12 +149,12 @@ function generateRuleBasedInsights(kpis, monthlyArrivals, monthlyRevenue) {
 }
 
 const INSIGHT_COLORS = {
-  positive: 'bg-green-50 border-green-200 text-green-900',
-  warning: 'bg-amber-50 border-amber-200 text-amber-900',
-  neutral: 'bg-blue-50 border-blue-200 text-blue-900',
-  info: 'bg-sky-50 border-sky-200 text-sky-900',
-  forecast: 'bg-purple-50 border-purple-200 text-purple-900',
-  recommendation: 'bg-indigo-50 border-indigo-200 text-indigo-900',
+  positive: 'bg-gray-200/80 border-gray-300 text-gray-900',
+  warning: 'bg-gray-200/80 border-gray-300 text-gray-900',
+  neutral: 'bg-gray-200/80 border-gray-300 text-gray-900',
+  info: 'bg-gray-200/80 border-gray-300 text-gray-900',
+  forecast: 'bg-gray-200/80 border-gray-300 text-gray-900',
+  recommendation: 'bg-gray-200/80 border-gray-300 text-gray-900',
 }
 
 export default function InsightsPage() {
@@ -383,7 +383,7 @@ export default function InsightsPage() {
           <button
             onClick={generateAiReport}
             disabled={aiLoading}
-            className="px-5 py-2.5 rounded-lg bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition min-h-[44px] disabled:opacity-60 flex items-center gap-2"
+            className="px-5 py-2.5 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition min-h-[44px] disabled:opacity-60 flex items-center gap-2"
           >
             {aiLoading && <span className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />}
             {aiLoading ? 'Generating AI Report…' : 'Generate AI Tourism Insight'}

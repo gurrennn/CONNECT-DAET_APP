@@ -247,11 +247,7 @@ export default function EconomicImpactPage() {
         }
       />
 
-      {/* Disclaimer */}
-      <div className="mb-5 p-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-xs">
-        <strong>Important:</strong> Amounts labeled "Estimated" are approximations based on available data, not verified financial records.
-        Values do not represent direct municipal tax revenue.
-      </div>
+
 
       {/* Summary KPIs (from loaded page) */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
@@ -259,19 +255,16 @@ export default function EconomicImpactPage() {
           title="Total Estimated Revenue (This Page)"
           value={formatPeso(totalRevenue, { compact: true })}
           subtitle="Estimated only"
-          colorClass="from-emerald-500 to-emerald-600"
         />
         <KPICard
           title="Total Employment Records"
           value={formatNumber(totalEmployment)}
           subtitle="Jobs tracked"
-          colorClass="from-blue-500 to-blue-600"
         />
         <KPICard
           title="Verified Records"
           value={`${verifiedCount} / ${records.length}`}
           subtitle="On this page"
-          colorClass="from-purple-500 to-purple-600"
         />
       </div>
 

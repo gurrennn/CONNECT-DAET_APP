@@ -6,8 +6,8 @@ import { SYSTEM_NAME, SYSTEM_FULL_NAME, ORGANIZATION } from '../lib/analyticsCon
 import { supabase } from '../../../lib/supabaseClient'
 import { logAuditAction } from '../lib/analyticsQueries'
 
-const TABS = ['system', 'profile', 'reporting', 'security']
-const TAB_LABELS = { system: 'System Info', profile: 'Admin Profile', reporting: 'Reporting', security: 'Security' }
+const TABS = ['system', 'profile', 'reporting']
+const TAB_LABELS = { system: 'System Info', profile: 'Admin Profile', reporting: 'Reporting' }
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('system')
@@ -55,7 +55,7 @@ export default function SettingsPage() {
     }
   }
 
-  const inputClass = 'w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500'
+  const inputClass = 'w-full px-3 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500'
 
   return (
     <div>
@@ -91,7 +91,7 @@ export default function SettingsPage() {
                 { label: 'Organization', value: ORGANIZATION },
                 { label: 'Assigned Route', value: '/analytics' },
                 { label: 'Version', value: '1.0.0' },
-                { label: 'Team', value: 'Team 10 — Lerum, Andrei S. & Perillo, Jerold C.' },
+                { label: 'Team', value: 'Team 10 — Lerum, Andrei S. & Perillo, Jerold C. & Rasco, Warren D.' },
                 { label: 'Project', value: 'CONNECT-DAET.ph' },
                 { label: 'Technology', value: 'Next.js · React · Supabase · Tailwind CSS' },
               ].map(item => (
@@ -195,39 +195,6 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* Security */}
-      {activeTab === 'security' && (
-        <div className="space-y-4 max-w-lg">
-          <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
-            <h2 className="font-semibold text-gray-900 mb-4">Security Settings</h2>
-            <div className="space-y-3 text-sm">
-              {[
-                { label: 'Authentication Provider', value: 'Supabase Auth', status: 'active' },
-                { label: 'Row Level Security (RLS)', value: 'Enabled on all analytics tables', status: 'active' },
-                { label: 'Admin Role Verification', value: 'Server-side via Supabase Auth + RLS', status: 'active' },
-                { label: 'Audit Logging', value: 'All create/update/delete/archive actions', status: 'active' },
-                { label: 'Password Management', value: 'Managed by Supabase Auth', status: 'active' },
-                { label: 'Session Timeout', value: 'Configured in Supabase project settings', status: 'info' },
-              ].map(item => (
-                <div key={item.label} className="flex items-start justify-between gap-3 py-2 border-b border-gray-50">
-                  <div>
-                    <div className="font-medium text-gray-800">{item.label}</div>
-                    <div className="text-xs text-gray-500 mt-0.5">{item.value}</div>
-                  </div>
-                  <span className={`flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-medium ${item.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-blue-100 text-blue-700'}`}>
-                    {item.status === 'active' ? 'Active' : 'Info'}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
-            <strong>🔒 Security Note:</strong> Admin-level operations require server-side verification through Supabase RLS policies.
-            Frontend-only checks are for UI convenience only and do not substitute for backend authorization.
-          </div>
-        </div>
-      )}
     </div>
   )
 }

@@ -33,21 +33,23 @@ export async function logAuditAction({ adminId, action, tableName, recordId, det
 
 // ─── Dashboard / KPIs ────────────────────────────────────────
 
-export async function getDashboardKPIs() {
+export async function getDashboardKPIs(year = new Date().getFullYear()) {
   try {
-    const currentYear = new Date().getFullYear()
-    const startOfYear = `${currentYear}-01-01`
+    const startOfYear = `${year}-01-01`
+    const endOfYear = `${year}-12-31`
 
     const [statsResult, economicResult, sustainResult] = await Promise.all([
       supabase
         .from('analytics_tourism_statistics')
-        .select('local_tourist_count, foreign_tourist_count, reporting_date')
+        .select('local_tourist_count, foreign_tourist_count, reporting_date, destination')
         .gte('reporting_date', startOfYear)
+        .lte('reporting_date', endOfYear)
         .eq('is_archived', false),
       supabase
         .from('analytics_economic_records')
         .select('estimated_amount, employment_count, record_date')
         .gte('record_date', startOfYear)
+        .lte('record_date', endOfYear)
         .eq('is_archived', false),
       supabase
         .from('analytics_sustainability_records')
@@ -80,6 +82,17 @@ export async function getDashboardKPIs() {
     const priorTotal = prior.reduce((s, r) => s + (Number(r.local_tourist_count) || 0) + (Number(r.foreign_tourist_count) || 0), 0)
     const growthRate = priorTotal > 0 ? ((recentTotal - priorTotal) / priorTotal) * 100 : null
 
+    // Peak destination — destination with most total arrivals
+    const destBuckets = {}
+    stats.forEach(r => {
+      const dest = r.destination || 'Other'
+      if (!destBuckets[dest]) destBuckets[dest] = 0
+      destBuckets[dest] += (Number(r.local_tourist_count) || 0) + (Number(r.foreign_tourist_count) || 0)
+    })
+    const peakDestination = Object.keys(destBuckets).length > 0
+      ? Object.entries(destBuckets).sort((a, b) => b[1] - a[1])[0][0]
+      : null
+
     return {
       totalArrivals,
       localArrivals: totalLocal,
@@ -88,6 +101,7 @@ export async function getDashboardKPIs() {
       tourismEmployment: totalEmployment,
       growthRate,
       statisticsRecords: stats.length,
+      peakDestination,
       lastUpdated: new Date().toISOString(),
     }
   } catch (err) {

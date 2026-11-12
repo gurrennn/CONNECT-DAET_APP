@@ -49,7 +49,7 @@ export default function AnalyticsDashboard() {
     setError(null)
     try {
       const [kpisData, monthly, yearly, revenue, destinations, satisfactionData] = await Promise.all([
-        getDashboardKPIs(),
+        getDashboardKPIs(year),
         getMonthlyArrivals(year),
         getYearlyArrivals(),
         getMonthlyRevenue(year),
@@ -120,20 +120,19 @@ export default function AnalyticsDashboard() {
 
           {/* Fix 2: Empty state banner when no records exist yet */}
           {kpis?.statisticsRecords === 0 && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-5 flex items-start gap-4">
+            <div className="bg-gray-200/80 border border-gray-300 rounded-xl p-5 flex items-start gap-4">
               <div>
-                <h3 className="font-semibold text-amber-900 mb-1">No tourism data yet</h3>
-                <p className="text-sm text-amber-800">
-                  Charts and KPIs will populate once you add records.
-                  Start by going to{' '}
-                  <a href="/analytics/statistics" className="underline font-medium">Tourism Statistics</a>
+                <h3 className="font-semibold text-gray-900 mb-1">No tourism data yet</h3>
+                <p className="text-sm text-gray-600">
+                  Charts and KPIs will populate once you add records. Start by going to{' '}
+                  <a href="/analytics/statistics" className="underline font-medium text-blue-600">Tourism Statistics</a>
                   {' '}to enter your first tourist arrival data.
                 </p>
                 <div className="flex flex-wrap gap-2 mt-3">
-                  <a href="/analytics/statistics" className="px-3 py-1.5 rounded-lg bg-amber-600 text-white text-xs font-medium hover:bg-amber-700 transition">
+                  <a href="/analytics/statistics" className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition">
                     + Add Tourism Statistics
                   </a>
-                  <a href="/analytics/economic-impact" className="px-3 py-1.5 rounded-lg bg-white border border-amber-300 text-amber-800 text-xs font-medium hover:bg-amber-50 transition">
+                  <a href="/analytics/economic-impact" className="px-3 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-medium hover:bg-blue-700 transition">
                     + Add Economic Data
                   </a>
                 </div>
@@ -259,35 +258,9 @@ export default function AnalyticsDashboard() {
             </div>
           </section>
 
-          {/* Quick Links */}
-          <section>
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Quick Actions</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-              {[
-                { label: 'Add Statistic', href: '/analytics/statistics', color: 'bg-blue-50 hover:bg-blue-100 text-blue-700' },
-                { label: 'Economic Data', href: '/analytics/economic-impact', color: 'bg-emerald-50 hover:bg-emerald-100 text-emerald-700' },
-                { label: 'Sustainability', href: '/analytics/sustainability', color: 'bg-teal-50 hover:bg-teal-100 text-teal-700' },
-                { label: 'AI Insights', href: '/analytics/insights', color: 'bg-purple-50 hover:bg-purple-100 text-purple-700' },
-                { label: 'Generate Report', href: '/analytics/reports', color: 'bg-orange-50 hover:bg-orange-100 text-orange-700' },
-                { label: 'Audit Logs', href: '/analytics/audit-logs', color: 'bg-gray-50 hover:bg-gray-100 text-gray-700' },
-              ].map(item => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className={`${item.color} rounded-xl p-4 flex flex-col items-center gap-2 text-center transition-colors min-h-[80px] justify-center border border-transparent hover:border-current/10`}
-                >
-                  <span className="text-xs font-medium leading-tight">{item.label}</span>
-                </a>
-              ))}
-            </div>
-          </section>
 
-          {/* Info footer */}
-          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-sm text-blue-800">
-            <strong>Note:</strong> All statistics shown are based on verified records entered by administrators.
-            Charts showing no data mean no records have been added yet.
-            To populate the dashboard, go to <a href="/analytics/statistics" className="underline font-medium">Tourism Statistics</a> and add records.
-          </div>
+
+
         </div>
       )}
 

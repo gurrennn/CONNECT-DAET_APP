@@ -37,11 +37,10 @@ const NAV_ITEMS = [
   { label: 'Economic Impact',   href: '/analytics/economic-impact', IconComp: Icons.economic },
   { label: 'Sustainability',    href: '/analytics/sustainability',  IconComp: Icons.sustain },
   { label: 'Data Analytics',   href: '/analytics/insights',        IconComp: Icons.analytics },
-  { label: 'AI Insights',       href: '/analytics/insights#ai',     IconComp: Icons.ai },
   { label: 'Integrations',      href: '/analytics/integrations',    IconComp: Icons.integrations },
   { label: 'Reports',           href: '/analytics/reports',         IconComp: Icons.reports },
   { label: 'Administrators',    href: '/analytics/administrators',  IconComp: Icons.admins },
-  { label: 'Audit Logs',        href: '/analytics/audit-logs',      IconComp: Icons.audit },
+  { label: 'System Logs',       href: '/analytics/audit-logs',      IconComp: Icons.audit },
   { label: 'Settings',          href: '/analytics/settings',        IconComp: Icons.settings },
 ]
 

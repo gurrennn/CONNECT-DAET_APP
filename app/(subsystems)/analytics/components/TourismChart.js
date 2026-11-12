@@ -24,10 +24,10 @@ function ChartCard({ title, children, onExplain }) {
             onClick={onExplain}
             className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-medium transition group"
             title="Click to understand this chart"
-            aria-label={`Explain ${title}`}
+            aria-label={`Help ${title}`}
           >
             <span className="w-4 h-4 rounded-full bg-blue-600 text-white flex items-center justify-center text-[10px] font-bold leading-none group-hover:bg-blue-700 transition">?</span>
-            Explain
+            Help
           </button>
         )}
       </div>
